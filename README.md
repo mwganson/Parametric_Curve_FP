@@ -1,6 +1,8 @@
 # Parametric_Curve_FP
 Create a parametric curve feature python object in FreeCAD
 
+![fp object](fp.jpg)
+
 ## Installation
 Place both .py files into your macros directory.  Run the Make_Parametric_Curve.py in FreeCAD to create the parametric curve object.
 
@@ -54,3 +56,6 @@ These are string properties that hold the formulas for creating the curve.  Math
 ### T Parameters Group
 #### t,t_max,interval.
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by the eval() function.  This is a great function, but it can also be a security vulnerability.  It is possible to embed malicious code in the expression to be evaluated.  Honestly, I'm not sure exaclty how, and even if I did I wouldn't be explaining it here for obvious reasons.
+### Changelog
+* 2021.08.27
+** Initial upload.
