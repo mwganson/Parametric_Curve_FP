@@ -4,7 +4,7 @@ Create a parametric curve feature python object in FreeCAD
 ![fp object](fp.jpg)
 
 ## Installation
-Place both .py files into your macros directory.  Run the Make_Parametric_Curve.py in FreeCAD to create the parametric curve object.
+Place both .py files into your macros directory.  Run the Make_Parametric_Curve.py in FreeCAD to create the parametric curve object.  It cannot be installed via the AddonManager at this time.
 
 ## History
 This macro is based on the FreeCAD macro 3D Parametric Curve by Lucio Gomez and Laurent Despeyroux.  https://wiki.freecadweb.org/Macro_3D_Parametric_Curve
