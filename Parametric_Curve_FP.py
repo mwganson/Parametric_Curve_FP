@@ -5,7 +5,7 @@ __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lu
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = """Activate the tool and modify properties as desired"""
-__version__ = "2021.08.28"
+__version__ = "2021.08.28, rev.2"
 
 
 import FreeCAD, FreeCADGui
@@ -205,6 +205,8 @@ def evaluate_stack(s,d):
 # then where "a" or "b" is found a value is substituted
 # evaluate("a+b",d) thus returns 3
 def evaluate(s, d={}):
+    if s == "":
+        return 0
     exprStack[:] = []
     try:
         results = BNF().parseString(s, parseAll=True)
@@ -235,8 +237,8 @@ class Curve:
         obj.addProperty("App::PropertyLink","Spreadsheet","Data","Link a spreadsheet to populate the values")
         obj.addProperty("App::PropertyBool","UpdateSpreadsheet","Data","If True data gets saved to spreadsheet, aliases created, if necessary, then this gets set back to False\nIf no spreadsheet is linked a new one is created.").UpdateSpreadsheet=False
         obj.addProperty("App::PropertyBool","UseSpreadsheet","Data","If True, poperties are readonly and must come from spreadsheet.  If false, spreadsheet is ignored and properties are set to read/write.").UseSpreadsheet=False
-        obj.addProperty("App::PropertyFloat","d","Data","hidden variable used during evaluation loop").d=0
-        obj.setEditorMode('d',3) #hidden
+        obj.addProperty("App::PropertyString","Continuity","Curve","Continuity of Curve")
+        obj.setEditorMode('Continuity',1)
         obj.Proxy = self
 
     def setReadOnly(self,fp,bReadOnly):
@@ -397,6 +399,10 @@ class Curve:
     def execute(self, fp):
         '''Do something when doing a recomputation, this method is mandatory'''
         fp.Shape = self.makeCurve(fp)
+        if hasattr(fp.Shape,"Continuity"):
+            fp.Continuity = fp.Shape.Continuity
+        else:
+            fp.Continuity = "N/A"
         #FreeCAD.Console.PrintMessage("Recompute Python Curve feature\n")
 
 class CurveVP:
