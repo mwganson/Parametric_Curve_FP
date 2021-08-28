@@ -10,9 +10,6 @@ Place both .py files into your macros directory.  Run the Make_Parametric_Curve.
 This macro is based on the FreeCAD macro 3D Parametric Curve by Lucio Gomez and Laurent Despeyroux.  https://wiki.freecadweb.org/Macro_3D_Parametric_Curve
 The difference is this macro creates a feature python object that also has spreadsheet integration capabilities.
 
-## Warning
-**This macro, like the original 3D Parametric Curve macro, uses eval(), which is a security vulnerability.  But this one is even more so because the formulas get saved with the document object.**
-
 ## Usage
 Run the Make_Parametric_Curve.py file as a macro to create the feature python object.  Then modify the properties to setup the formula to use.  It comes with a default formula to create a curve pictured here:
 
@@ -52,10 +49,40 @@ This property serves as a command button.  When you set it to True it triggers t
 When this is True, the formula properties (a,b,c,X,Y,Z,t,t_max, and interval) are all set to readonly.  You won't be able to modify the properties in the fp object's property view when this is True.  Instead, you must modify the appropriate cells in the spreadsheet.  The fp object automatically updates its properties from the spreadsheet when they change.  Set this to False if you would prefer to modify the properties in the fp object rather than in the spreadsheet.  But if you set it to True again your property changes will be overwritten with the values from the spreadsheet.  Use the Update Spreadsheet property/command trigger to push the data to the spreadsheet first if you don't want the property values to be clobbered.
 ### Equation1 and Equation2 Groups
 #### a,b,c,X,Y,Z
-These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Basically, anything in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.
+These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Basically, anything in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.<br/>
+<br/>
+Supported math functions:
+'''
+    "sin": math.sin,
+    "cos": math.cos,
+    "tan": math.tan,
+    "exp": math.exp,
+    "atan": math.atan,
+    "acos": math.acos,
+    "acosh": math.acosh,
+    "asin": math.asin,
+    "asinh": math.asinh,
+    "sqrt": math.sqrt,
+    "ceil": math.ceil,
+    "floor": math.floor,
+    "sinh": math.sinh,
+    "log": math.log,
+    "factorial":math.factorial,
+    "abs": abs,
+    "degrees": math.degrees,
+    "degree": math.degrees,
+    "deg": math.degrees,
+    "lgamma": math.lgamma,
+    "gamma": math.gamma,
+    "radians": math.radians,
+    "rad": math.radians,
+    "trunc": int,
+    "round": round
+'''
+
 ### T Parameters Group
 #### t,t_max,interval.
-The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by the eval() function.  This is a great function, but it can also be a security vulnerability.  It is possible to embed malicious code in the expression to be evaluated.  Honestly, I'm not sure exaclty how, and even if I did I wouldn't be explaining it here for obvious reasons.
+The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 ### Changelog
 * 2021.08.27<br/>
 ** Initial upload.
