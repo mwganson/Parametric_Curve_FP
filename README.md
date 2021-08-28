@@ -51,32 +51,41 @@ When this is True, the formula properties (a,b,c,X,Y,Z,t,t_max, and interval) ar
 #### a,b,c,X,Y,Z
 These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Basically, anything in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.<br/>
 <br/>
-Supported math functions:
-    "sin": math.sin,
-    "cos": math.cos,
-    "tan": math.tan,
-    "exp": math.exp,
-    "atan": math.atan,
-    "acos": math.acos,
-    "acosh": math.acosh,
-    "asin": math.asin,
-    "asinh": math.asinh,
-    "sqrt": math.sqrt,
-    "ceil": math.ceil,
-    "floor": math.floor,
-    "sinh": math.sinh,
-    "log": math.log,
-    "factorial":math.factorial,
-    "abs": abs,
-    "degrees": math.degrees,
-    "degree": math.degrees,
-    "deg": math.degrees,
-    "lgamma": math.lgamma,
-    "gamma": math.gamma,
-    "radians": math.radians,
-    "rad": math.radians,
-    "trunc": int,
-    "round": round
+a -> only refer to t<br/>
+b -> only refer to a and t<br/>
+c -> only refer to a, b, and t<br/>
+X -> only refer to a, b, c, and t<br/>
+Y -> only refer to a, b, c, X, and t<br/>
+Z -> only refer to a, b, c, X, Y, and t<br/>
+<br/>
+Supported math functions:<br/><br/>
+    "sin": math.sin<br/>
+    "cos": math.cos<br/>
+    "tan": math.tan<br/>
+    "exp": math.exp<br/>
+    "atan": math.atan<br/>
+    "acos": math.acos<br/>
+    "acosh": math.acosh<br/>
+    "asin": math.asin<br/>
+    "asinh": math.asinh<br/>
+    "sqrt": math.sqrt<br/>
+    "ceil": math.ceil<br/>
+    "floor": math.floor<br/>
+    "sinh": math.sinh<br/>
+    "log": math.log<br/>
+    "factorial":math.factorial<br/>
+    "abs": abs<br/>
+    "degrees": math.degrees<br/>
+    "degree": math.degrees<br/>
+    "deg": math.degrees<br/>
+    "lgamma": math.lgamma<br/>
+    "gamma": math.gamma<br/>
+    "radians": math.radians<br/>
+    "rad": math.radians<br/>
+    "trunc": int<br/>
+    "round": round<br/>
+ 
+ To do basic adding, subtracting, multiplying, dividing, use standard "+-\*/". For exponents instead of 3\*\*7 standard python syntax use 3^7 to do "3 to the power of 7".
 
 ### T Parameters Group
 #### t,t_max,interval.
