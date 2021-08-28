@@ -5,12 +5,225 @@ __author__ = "<TheMarkster> 2021.08.27, based on macro 3D Parametric Curve by Go
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = """Activate the tool and modify properties as desired"""
+__version__ = "2021.08.27"
 
 
 import FreeCAD, FreeCADGui
 from pivy import coin
 from math import *
 import Part
+
+#In order to avoid using eval() and the security implications therefrom, I have borrowed and modified
+#some code for using pyparsing
+#https://github.com/pyparsing/pyparsing/blob/master/examples/fourFn.py
+#
+
+# fourFn.py
+#
+# Demonstration of the pyparsing module, implementing a simple 4-function expression parser,
+# with support for scientific notation, and symbols for e and pi.
+# Extended to add exponentiation and simple built-in functions.
+# Extended test cases, simplified pushFirst method.
+# Removed unnecessary expr.suppress() call (thanks Nathaniel Peterson!), and added Group
+# Changed fnumber to use a Regex, which is now the preferred method
+# Reformatted to latest pypyparsing features, support multiple and variable args to functions
+#
+# Copyright 2003-2019 by Paul McGuire
+#
+from pyparsing import (
+    Literal,
+    Word,
+    Group,
+    Forward,
+    alphas,
+    alphanums,
+    Regex,
+    ParseException,
+    CaselessKeyword,
+    Suppress,
+    delimitedList,
+)
+import math
+import operator
+
+exprStack = []
+
+
+def push_first(toks):
+    exprStack.append(toks[0])
+
+
+def push_unary_minus(toks):
+    for t in toks:
+        if t == "-":
+            exprStack.append("unary -")
+        else:
+            break
+
+
+bnf = None
+
+
+def BNF():
+    """
+    expop   :: '^'
+    multop  :: '*' | '/'
+    addop   :: '+' | '-'
+    integer :: ['+' | '-'] '0'..'9'+
+    atom    :: PI | E | real | fn '(' expr ')' | '(' expr ')'
+    factor  :: atom [ expop factor ]*
+    term    :: factor [ multop factor ]*
+    expr    :: term [ addop term ]*
+    """
+    global bnf
+    if not bnf:
+        # use CaselessKeyword for e and pi, to avoid accidentally matching
+        # functions that start with 'e' or 'pi' (such as 'exp'); Keyword
+        # and CaselessKeyword only match whole words
+        e = CaselessKeyword("E")
+        pi = CaselessKeyword("PI")
+        # fnumber = Combine(Word("+-"+nums, nums) +
+        #                    Optional("." + Optional(Word(nums))) +
+        #                    Optional(e + Word("+-"+nums, nums)))
+        # or use provided pyparsing_common.number, but convert back to str:
+        # fnumber = ppc.number().addParseAction(lambda t: str(t[0]))
+        fnumber = Regex(r"[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?")
+        ident = Word(alphas, alphanums + "_$")
+
+        plus, minus, mult, div = map(Literal, "+-*/")
+        lpar, rpar = map(Suppress, "()")
+        addop = plus | minus
+        multop = mult | div
+        expop = Literal("^")
+
+        expr = Forward()
+        expr_list = delimitedList(Group(expr))
+        # add parse action that replaces the function identifier with a (name, number of args) tuple
+        def insert_fn_argcount_tuple(t):
+            fn = t.pop(0)
+            num_args = len(t[0])
+            t.insert(0, (fn, num_args))
+
+        fn_call = (ident + lpar - Group(expr_list) + rpar).setParseAction(
+            insert_fn_argcount_tuple
+        )
+        atom = (
+            addop[...]
+            + (
+                (fn_call | pi | e | fnumber | ident).setParseAction(push_first)
+                | Group(lpar + expr + rpar)
+            )
+        ).setParseAction(push_unary_minus)
+
+        # by defining exponentiation as "atom [ ^ factor ]..." instead of "atom [ ^ atom ]...", we get right-to-left
+        # exponents, instead of left-to-right that is, 2^3^2 = 2^(3^2), not (2^3)^2.
+        factor = Forward()
+        factor <<= atom + (expop + factor).setParseAction(push_first)[...]
+        term = factor + (multop + factor).setParseAction(push_first)[...]
+        expr <<= term + (addop + term).setParseAction(push_first)[...]
+        bnf = expr
+    return bnf
+
+
+# map operator symbols to corresponding arithmetic operations
+epsilon = 1e-12
+opn = {
+    "+": operator.add,
+    "-": operator.sub,
+    "*": operator.mul,
+    "/": operator.truediv,
+    "^": operator.pow,
+}
+
+fn = {
+    "sin": math.sin,
+    "cos": math.cos,
+    "tan": math.tan,
+    "exp": math.exp,
+    "atan": math.atan,
+    "acos": math.acos,
+    "acosh": math.acosh,
+    "asin": math.asin,
+    "asinh": math.asinh,
+    "sqrt": math.sqrt,
+    "ceil": math.ceil,
+    "floor": math.floor,
+    "sinh": math.sinh,
+    "log": math.log,
+    "factorial":math.factorial,
+    "abs": abs,
+    "degrees": math.degrees,
+    "degree": math.degrees,
+    "deg": math.degrees,
+    "lgamma": math.lgamma,
+    "gamma": math.gamma,
+    "radians": math.radians,
+    "rad": math.radians,
+    "trunc": int,
+    "round": round,
+    "sgn": lambda a: -1 if a < -epsilon else 1 if a > epsilon else 0,
+    # functionsl with multiple arguments
+    "multiply": lambda a, b: a * b,
+    "hypot": math.hypot,
+    # functions with a variable number of arguments
+    "all": lambda *a: all(a),
+}
+
+
+def evaluate_stack(s,d):
+    op, num_args = s.pop(), 0
+    if isinstance(op, tuple):
+        op, num_args = op
+    if op == "unary -":
+        return -evaluate_stack(s,d)
+    if op in "+-*/^":
+        # note: operands are pushed onto the stack in reverse order
+        op2 = evaluate_stack(s,d)
+        op1 = evaluate_stack(s,d)
+        return opn[op](op1, op2)
+    elif op == "PI":
+        return math.pi  # 3.1415926535
+    elif op == "E":
+        return math.e  # 2.718281828
+    elif op == "t":
+        return d["t"]
+    elif op == "a":
+        return d["a"]
+    elif op == "b":
+        return d["b"]
+    elif op == "c":
+        return d["c"]
+    elif op == "X":
+        return d["X"]
+    elif op == "Y":
+        return d["Y"]
+    elif op == "Z":
+        return d["Z"]
+    elif op in fn:
+        # note: args are pushed onto the stack in reverse order
+        args = reversed([evaluate_stack(s,d) for _ in range(num_args)])
+        return fn[op](*args)
+    elif op[0].isalpha():
+        raise Exception("invalid identifier '%s'" % op)
+    else:
+        # try to evaluate as int first, then as float if int fails
+        try:
+            return int(op)
+        except ValueError:
+            return float(op)
+
+def evaluate(s, d):
+    exprStack[:] = []
+    try:
+        results = BNF().parseString(s, parseAll=True)
+        val = evaluate_stack(exprStack[:],d)
+    except ParseException as pe:
+        raise Exception(s, "failed parse:", str(pe))
+    except Exception as e:
+        raise Exception (s, "failed eval:", str(e), exprStack)
+    else:
+        return val
+
 
 class Curve:
     def __init__(self, obj):
@@ -25,10 +238,13 @@ class Curve:
         obj.addProperty("App::PropertyFloat","t_max","T Parameters","Max t").t_max = 2*pi
         obj.addProperty("App::PropertyFloat","Interval","T Parameters","Interval").Interval = 0.01
         obj.addProperty("App::PropertyBool","Closed","Curve","Whether curve is closed").Closed=True
+        obj.addProperty("App::PropertyString","Version", "Base", "Version this object was created with").Version = __version__
         obj.addProperty("App::PropertyBool","MakeBSpline","Curve","Make BSPline if True or Polygon if False").MakeBSpline=True
         obj.addProperty("App::PropertyLink","Spreadsheet","Data","Link a spreadsheet to populate the values")
         obj.addProperty("App::PropertyBool","UpdateSpreadsheet","Data","If True data gets saved to spreadsheet, aliases created, if necessary, then this gets set back to False\nIf no spreadsheet is linked a new one is created.").UpdateSpreadsheet=False
         obj.addProperty("App::PropertyBool","UseSpreadsheet","Data","If True, poperties are readonly and must come from spreadsheet.  If false, spreadsheet is ignored and properties are set to read/write.").UseSpreadsheet=False
+        obj.addProperty("App::PropertyFloat","d","Data","hidden variable used during evaluation loop").d=0
+        obj.setEditorMode('d',3) #hidden
         obj.Proxy = self
 
     def setReadOnly(self,fp,bReadOnly):
@@ -133,7 +349,7 @@ class Curve:
 
     def makeCurve(self, fp):
         self.updateFromSpreadsheet(fp)
-
+        d = {"a":0,"b":0,"c":0,"X":0,"Y":0,"Z":0,"t":0}
         fa = fp.a
         fb = fp.b
         fc = fp.c
@@ -143,22 +359,30 @@ class Curve:
         t = fp.t
         tf = fp.t_max
         intv = fp.Interval
-        d=(tf-t)/intv
+        dd=(tf-t)/intv
         matriz = []
-        for i in range(int(d)):
+        for i in range(int(dd)):
+
             try:
-              value="a"
-              a=eval(fa)
-              value="b"
-              b=eval(fb)
-              value="c"
-              c=eval(fc)
-              value="X"
-              fxx=eval(fx)
-              value="Y"
-              fyy=eval(fy)
-              value="Z"
-              fzz=eval(fz)
+                d["t"] = t
+                value="a ->"+str(fa)
+                a=evaluate(fa,d)
+                d["a"]=a
+                value="b ->"+str(fb)
+                b=evaluate(fb,d)
+                d["b"] = b
+                value="c ->"+str(fc)
+                c=evaluate(fc,d)
+                d["c"]=c
+                value="X ->"+str(fx)
+                fxx=evaluate(fx,d)
+                d["X"]=fxx
+                value="Y ->"+str(fy)
+                fyy=evaluate(fy,d)
+                d["Y"]=fyy
+                value="Z ->"+str(fz)
+                fzz=evaluate(fz,d)
+                d["Z"]=fzz
             except ZeroDivisionError:
                 FreeCAD.Console.PrintError("Error division by zero in calculus of "+value+"() for t="+str(t)+" !")
             except:
