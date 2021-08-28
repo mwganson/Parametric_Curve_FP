@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 __title__ = "3DParametricCurveFP"
-__author__ = "<TheMarkster> 2021.08.27, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
+__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = """Activate the tool and modify properties as desired"""
-__version__ = "2021.08.27"
+__version__ = "2021.08.28"
 
 
 import FreeCAD, FreeCADGui
@@ -185,20 +185,8 @@ def evaluate_stack(s,d):
         return math.pi  # 3.1415926535
     elif op == "E":
         return math.e  # 2.718281828
-    elif op == "t":
-        return d["t"]
-    elif op == "a":
-        return d["a"]
-    elif op == "b":
-        return d["b"]
-    elif op == "c":
-        return d["c"]
-    elif op == "X":
-        return d["X"]
-    elif op == "Y":
-        return d["Y"]
-    elif op == "Z":
-        return d["Z"]
+    elif op in d:
+        return d[op]
     elif op in fn:
         # note: args are pushed onto the stack in reverse order
         args = reversed([evaluate_stack(s,d) for _ in range(num_args)])
@@ -211,8 +199,12 @@ def evaluate_stack(s,d):
             return int(op)
         except ValueError:
             return float(op)
-
-def evaluate(s, d):
+#d is a dictionary of variable names
+#example:
+#d = {"a":1,"b":2}
+# then where "a" or "b" is found a value is substituted
+# evaluate("a+b",d) thus returns 3
+def evaluate(s, d={}):
     exprStack[:] = []
     try:
         results = BNF().parseString(s, parseAll=True)
