@@ -52,7 +52,6 @@ When this is True, the formula properties (a,b,c,X,Y,Z,t,t_max, and interval) ar
 These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Basically, anything in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.<br/>
 <br/>
 Supported math functions:
-'''
     "sin": math.sin,
     "cos": math.cos,
     "tan": math.tan,
@@ -78,7 +77,6 @@ Supported math functions:
     "rad": math.radians,
     "trunc": int,
     "round": round
-'''
 
 ### T Parameters Group
 #### t,t_max,interval.
