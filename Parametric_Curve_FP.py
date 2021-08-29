@@ -5,7 +5,7 @@ __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lu
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = """Activate the tool and modify properties as desired"""
-__version__ = "2021.08.29"
+__version__ = "2021.08.29.rev2"
 
 
 import FreeCAD, FreeCADGui
@@ -210,6 +210,7 @@ def evaluate_stack(s,d):
 def evaluate(s, d={}):
     if s == "":
         return 0
+    s = fixDots(s)
     exprStack[:] = []
     try:
         results = BNF().parseString(s, parseAll=True)
@@ -220,6 +221,17 @@ def evaluate(s, d={}):
         raise Exception (s, "failed eval:", str(e), exprStack)
     else:
         return val
+
+def fixDots(s):
+    #I stink at reg ex, so this inefficient function exists
+    """convert .1 to 0.1 or 6+.1 to 6+0.1"""
+    if s[0]==".":
+        s = "0"+s
+    indices = [i for i,letter in enumerate(s) if letter == "." and s[i-1] not in "0123456789" and i!= 0]
+    while indices:
+        s = s[:indices[0]]+"0"+s[indices[0]:]
+        indices = [i for i,letter in enumerate(s) if letter == "." and s[i-1] not in "0123456789" and i != 0]
+    return s
 
 
 class Curve:
@@ -233,7 +245,7 @@ class Curve:
         obj.addProperty("App::PropertyString","Z","Equation2(X,Y,Z)","Z(a,b,c,t)").Z = "0"
         obj.addProperty("App::PropertyFloat","t","Equation3(T Params)","start value for t").t = 0.0
         obj.addProperty("App::PropertyFloat","t_max","Equation3(T Params)","Max t").t_max = 2*pi
-        obj.addProperty("App::PropertyFloat","Interval","Equation3(T Params)","Interval").Interval = 0.01
+        obj.addProperty("App::PropertyFloat","Interval","Equation3(T Params)","Interval").Interval = 0.1
         obj.addProperty("App::PropertyBool","Closed","Curve","Whether curve is closed").Closed=True
         obj.addProperty("App::PropertyString","Version", "Base", "Version this object was created with").Version = __version__
         obj.addProperty("App::PropertyBool","MakeBSpline","Curve","Make BSPline if True or Polygon if False").MakeBSpline=True
@@ -256,6 +268,7 @@ class Curve:
         self.JSON_Data = {}
         self.previousFormula = ""
         self.bInihibitUpdates = False;
+        self.bInhibitRecompute = False;
 
     def setReadOnly(self,fp,bReadOnly):
         """if bReadOnly = True, we set the properties linked to the spreadsheet readonly, else set them normal mode"""
@@ -347,6 +360,7 @@ class Curve:
         self.JSON_Data = data
         with open(fp.File,"w") as outfile:
             json.dump(data,outfile)
+        FreeCAD.Console.PrintMessage("JSON file updated, formula: "+fp.PresetName+" appended successfully.\n")
 
     def checkFile(self,fp):
         if not fp.File: #checks to see if there is filename in File property
@@ -373,8 +387,7 @@ class Curve:
             json.dump(self.JSON_Data,outfile)
 
     def renamePreset(self,fp):
-        if not fp.File:
-            FreeCAD.Console.PrintError("No linked JSON file.  Create a new JSON file or link one via the File property.  You can also just enter a name in the File property to create a new file.\n")
+        if not self.checkFile(fp):
             return
         if fp.Presets in self.JSON_Data.keys():
             self.JSON_Data[fp.PresetName] = self.JSON_Data.pop(fp.Presets)
@@ -382,8 +395,7 @@ class Curve:
             fp.Presets = fp.PresetName
 
     def newFormula(self,fp):
-        if not fp.File:
-            FreeCAD.Console.PrintError("No linked JSON file.  Create a new JSON file or link one via the File property.  You can also just enter a name in the File property to create a new file.\n")
+        if not self.checkFile(fp):
             return
         ii = 2
         trialName = "formula"
@@ -523,11 +535,13 @@ class Curve:
             self.setReadOnly(fp,False)
 
         elif prop == "UpdateSpreadsheet" and fp.UpdateSpreadsheet == True:
+            self.bInhibitRecompute = True
             self.updateToSpreadsheet(fp)
             fp.UpdateSpreadsheet = False
 
         elif prop == "File" and fp.File != None:
             #self.readJSONFile(fp)
+            FreeCAD.Console.PrintMessage("File property updated.  You must enable Read File property to read in the contents, which will overwrite existing formula unless it is appended to the file first.\n")
             pass #user will need to trigger read manually
         elif prop == "Presets" and fp.File != None:
             self.bInihibitUpdates = True
@@ -536,16 +550,20 @@ class Curve:
             fp.PresetName = fp.Presets
 
         elif prop == "WriteFile" and fp.File != None and fp.WriteFile == True:
+            self.bInhibitRecompute = True
             self.writeJSONFile(fp)
             fp.WriteFile = False
         elif prop == "ChangePresetName" and fp.ChangePresetName == True and fp.File != None:
+            self.bInhibitRecompute = True
             self.renamePreset(fp)
             fp.ChangePresetName = False
         elif prop == "NewFormula" and fp.NewFormula == True:
+            self.bInhibitRecompute = True
             self.newFormula(fp)
             fp.NewFormula = False
         elif prop == "OpenFile" and fp.OpenFile == True:
             fp.OpenFile = False
+            self.bInhibitRecompute = True
             sys = platform.system()
             if fp.File:
                 if 'Windows' in sys:
@@ -564,13 +582,14 @@ class Curve:
                 self.readJSONFile(fp)
         elif prop == "AppendFile" and fp.AppendFile == True:
             fp.AppendFile = False
+            self.bInhibitRecompute = True
             self.appendFile(fp)
         elif prop == "DeleteFormula" and fp.DeleteFormula == True:
             fp.DeleteFormula = False
             self.deleteFormula(fp)
         elif prop == "a" or prop == "b" or prop == "c" or prop == "X" or prop == "Y" or prop == "Z" or prop == "t" or prop == "t_max" or prop == "Interval":
             if fp.PresetName and not self.bInihibitUpdates:
-                self.updateJSON_Data(fp,fp.PresetName) #update self.JSON_Data on every property change
+                self.updateJSON_Data(fp,fp.Presets) #update self.JSON_Data on every property change
 
     def makeCurve(self, fp):
         self.updateFromSpreadsheet(fp)
@@ -629,6 +648,9 @@ class Curve:
 
     def execute(self, fp):
         '''Do something when doing a recomputation, this method is mandatory'''
+        if self.bInhibitRecompute:
+            self.bInhibitRecompute = False
+            return
         fp.Shape = self.makeCurve(fp)
         if hasattr(fp.Shape,"Continuity"):
             fp.Continuity = fp.Shape.Continuity
