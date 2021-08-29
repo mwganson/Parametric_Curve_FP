@@ -8,7 +8,7 @@ Place both .py files into your macros directory.  Run the Make_Parametric_Curve.
 
 ## History
 This macro is based on the FreeCAD macro 3D Parametric Curve by Lucio Gomez and Laurent Despeyroux.  https://wiki.freecadweb.org/Macro_3D_Parametric_Curve
-The difference is this macro creates a feature python object that also has spreadsheet integration capabilities.
+The difference is this macro creates a feature python object that also has spreadsheet and JSON integration capabilities.
 
 ## Usage
 Run the Make_Parametric_Curve.py file as a macro to create the feature python object.  Then modify the properties to setup the formula to use.  It comes with a default formula to create a curve pictured here:
