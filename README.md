@@ -29,6 +29,20 @@ You can also, in addition to modifying the properties directly, elect to use a s
 
 The feature python object can add these aliases for you to an existing spreadsheet or a new spreadsheet that it can also create.  If there is no spreadsheet linked in the Spreadsheet property and you set the Update Spreadsheet property to True, the fp object will create the new spreadsheet, link it to itself, and add the aliases to the spreadsheet.  It also sets the Use Spreadsheet property to True.  If you manually select a spreadsheet by editing the Spreadsheet property to link to an existing spreadsheet, and that spreadsheet does not contain the required aliases you will be asked whether to create them or not.  Doing this will clobber any existing data in cells A1 through B9.
 
+As of version 2021.08.28.rev3 there is also support for JSON files.  You can save the fp object's state (the Equation Group and JSON group properties) to the JSON file, and then later load them back from the JSON file in this or in another Parametric Curve object.  With JSON files you are able to have more than one formula per file, unlike spreadsheets, which are limited to one formula per spreadsheet.  If you have many formulas you like to use you can save them all to a single JSON file.
+
+Sample JSON file:
+
+{"small wire": {"a": "3", "b": "7", "c": "cos(t)", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "", "min_t": "0", "max_t": "6.2835", "interval": "1"}, "biggest wire": {"a": "33", "b": "7", "c": "cos(t)", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "", "min_t": "0", "max_t": "6.28315", "interval": "1"}, "medium wire": {"a": "3", "b": "7", "c": "cos(t)", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "", "min_t": "0.0", "max_t": "6.2835", "interval": "1.0"},"high wire": {"a": "4", "b": "7", "c": "cos(t)", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "", "min_t": "0.0", "max_t": "6.2835", "interval": "1.0"},"highest wire": {"a": "5", "b": "7", "c": "cos(t)", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "", "min_t": "0.0", "max_t": "6.2835", "interval": "1.0"}}
+
+It holds 4 formulas: "small wire", "biggest wire", "medium wire", and "highest wire".
+
+You can manually edit the JSON files in a text editor, but there are a few things to keep in mind.
+* Make sure to follow the formatting properly or else the fp object will not be able to read the file
+* Values for min_t, max_t, and interval must evaluate directly to float.  For example, "3.14159" works, but "pi" does not.
+* Values with decimal points must not lead with the decimal, but rather should have a leading 0.  Example: "0.5" instead of ".5"
+* All values must be strings (in quotes)
+
 ## Properties
 
 The Feature Python object (ParametricCurve) has a number of properties separated into different groupings.
