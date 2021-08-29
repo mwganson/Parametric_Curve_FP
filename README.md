@@ -40,13 +40,29 @@ The property sets the curve to either closed or not closed.  If it's set to True
 If set to True a BSpline object is created for the curve.  If False, a polygon is created instead.
 #### Version
 This gives the version used to create this object (not necessarily the same as currently installed.)  It is in the form of the date of last modification, e.g. 2021.08.27.
-### Data Group
+### Spreadsheet Group
 #### Spreadsheet (Default: None)
 This is a link property, linking the fp object to a spreadsheet.  By default, it is empty, but if you select a spreadsheet in the tree view, and then run the macro to create the fp object, it will link that spreadsheet automatically and import the data into the properties.  See Usage section above for more details on required format of spreadsheet.
 #### Update Spreadsheet (Default: False)
 This property serves as a command button.  When you set it to True it triggers the fp object to save the properties to the connected spreadsheet, overwriting any existing values.  If no spreadsheet is connected it will create a new spreadsheet for you, link it in the Spreadsheet property, add the required aliases, and set their values.  It's a way of saving the current properties to a new spreadsheet for later use.  In all other cases the fp object pulls values from the connected spreadsheet (if Use Spreadsheet = True, see below), but in this case it is pushing those values to the spreadsheet.  After it pushes the data to the spreadsheet it resets itself back to False.
 #### Use Spreadsheet (Default: False)
 When this is True, the formula properties (a,b,c,X,Y,Z,t,t_max, and interval) are all set to readonly.  You won't be able to modify the properties in the fp object's property view when this is True.  Instead, you must modify the appropriate cells in the spreadsheet.  The fp object automatically updates its properties from the spreadsheet when they change.  Set this to False if you would prefer to modify the properties in the fp object rather than in the spreadsheet.  But if you set it to True again your property changes will be overwritten with the values from the spreadsheet.  Use the Update Spreadsheet property/command trigger to push the data to the spreadsheet first if you don't want the property values to be clobbered.
+### JSON Group
+#### Change Preset Name
+[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to change the name of the current preset (as currently selected in the Presets property) to the string currently in the Preset_Name property field.  By default, when a new formula is created (or when a new JSON file is initiated) the default name given to it is "formula" or sometimes "formula1", "formula2", etc.  If you want to change the name to something more meaningful, such as "Spiral", enter "Spiral" into the Preset_Name property and trigger the Change Preset Name property form False to True.  Note: You must connect a JSON file to the feature python object using the File property, discussed below, before you can use most of the features in the JSON group.
+#### File
+This is the JSON file connected to the fp object.  By default, it is empty.  You can click the "[...]" button to open the file open dialog to select a file or create a new one by entering the name into the File property field.  Make sure you have write access to the folder you choose.  In Linux something like ~/Documents/myjsonfile.txt would work.  In Windows, maybe use c:\users\YOURUSERNAME\Documents\myjsonfile.txt.  When you connect the file, if it is one that already exists and has previously saved data in it, the data in the file will be read in and the Equation properties will be populated with this data.
+
+A JSON file may have more than one formula stored in it.  Each formula is given a name, e.g. formula, formula1, etc.  Or you can assign your own custom name if you prefer.  All of the formulas get populated into the Presets property, which presents as a drop down list from which you can select the desired formula.
+#### New Formula
+[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to create a new formula and add it to the Presets property.  It is given a default name, such as "formula", "formula1", "formula2", etc., whichever one is first available.  You can change this name to a more meaningful one as described above im the Change Preset Name documentation.  All of the Trigger properties are boolean properties that are normally False.  You trigger them by setting them to True.  They reset themselves to False after running the command.
+#### Open File
+[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to open the JSON file in your default editor.  If you give it a .txt extension this is more likely to be successful.  It has been tested on Windows and Ubuntu, but not as yet on Mac.  The JSON file can be edited as you would any text file.  Just take care to follow the formatting if adding new formulas in this manner.  Once you have edited and saved your changes you can have the fp object reload the file by triggering the Reload File property.
+#### Reload File
+[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to reload the JSON file from disk in the event changes have been made to the file outside of the fp object or in the case where you simply want to reset the fp object.
+#### Write JSON
+[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to save the current state of the fp object to the JSON file.  Everything in the JSON file will be overwritten.  You must trigger this command in order to save any changes to the JSON file unless you made the changes outside the fp object, such as using Notepad in Windows.
+
 ### Equation1 and Equation2 Groups
 #### a,b,c,X,Y,Z
 These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Basically, anything in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.<br/>
@@ -87,7 +103,7 @@ Supported math functions:<br/><br/>
  
  To do basic adding, subtracting, multiplying, dividing, use standard "+-\*/". For exponents instead of 3\*\*7 standard python syntax use 3^7 to do "3 to the power of 7".
 
-### T Parameters Group
+### Equation3(T Params) Group
 #### t,t_max,interval.
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 ### Changelog
