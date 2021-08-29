@@ -125,7 +125,7 @@ The way the macro works is it creates points in a loop, and then at the end of t
 ** Adds JSON support
 * 2021.08.28, rev.2<br/>
 ** Allow for unused variables to be blank, empty string.<br/>
-evaluate("") -> 0
+evaluate("") -> 0<br/>
 ** Add Continuity (read only) property in Curve group
 ** Remove unused hidden property "d"
 * 2021.08.28<br/>
