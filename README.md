@@ -30,10 +30,16 @@ The feature python object can add these aliases for you to an existing spreadshe
 You can save the fp object's state (the Equation Group and JSON group properties) to the JSON file, and then later load them back from the JSON file in this or in another Parametric Curve object.  With JSON files you are able to have more than one formula per file, unlike spreadsheets, which are limited to one formula per spreadsheet.  If you have many formulas you like to use you can save them all to a single JSON file.
 
 Sample JSON file:
+<pre>
 {
-"formula37": {"a": "37", "b": "4", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.01"}, "formula13": {"a": "13", "b": "13", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"}, "formula7": {"a": "7", "b": "18", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"}, "formula_clover": {"a": "3", "b": "7", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"}, "formula4": {"a": "4", "b": "2", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "1.0"}, 
+"formula37": {"a": "37", "b": "4", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.01"},
+"formula13": {"a": "13", "b": "13", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"},
+"formula7": {"a": "7", "b": "18", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"},
+"formula_clover": {"a": "3", "b": "7", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"},
+"formula4": {"a": "4", "b": "2", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "1.0"},
 "form_42": {"a": "4", "b": "2", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "1.0"}
 }
+</pre>
 
 You can manually edit the JSON files in a text editor, but there are a few things to keep in mind.
 * Make sure to follow the formatting properly or else the fp object will not be able to read the file
