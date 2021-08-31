@@ -1,3 +1,5 @@
+As of version 2021.08.31.rev2 JSON files, Spreadsheets, and feature python objects created with previous versions are no longer compatible and might even crash FreeCAD if you attempt to open a file with a previously created FP object in it.
+
 # Parametric_Curve_FP
 Create a parametric curve feature python object in FreeCAD
 
@@ -21,9 +23,9 @@ You can also, in addition to modifying the properties directly, elect to use a s
 * X -- String that contains the X formula.
 * Y -- String that contains the Y formula.
 * Z -- String that contains the Z formula.
-* min_t -- Floating point that contains the starting value of t.
-* max_t -- Floating point that contains the ending value of t.
-* interval -- Floating point that contains the step value for t as it goes from min_t to max_t.
+* t_min -- Floating point that contains the starting value of t.
+* t_max -- Floating point that contains the ending value of t.
+* interval -- Floating point that contains the step value for t as it goes from t_min to t_max.
 
 The feature python object can add these aliases for you to an existing spreadsheet or a new spreadsheet that it can also create.  If there is no spreadsheet linked in the Spreadsheet property and you set the Update Spreadsheet property to True, the fp object will create the new spreadsheet, link it to itself, and add the aliases to the spreadsheet.  It also sets the Use Spreadsheet property to True.  If you manually select a spreadsheet by editing the Spreadsheet property to link to an existing spreadsheet, and that spreadsheet does not contain the required aliases you will be asked whether to create them or not.  Doing this will clobber any existing data in cells A1 through B9.
 
@@ -31,14 +33,10 @@ You can save the fp object's state (the Equation Group and JSON group properties
 
 Sample JSON file:
 <pre>
-{
-"formula37": {"a": "37", "b": "4", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.01"},
-"formula13": {"a": "13", "b": "13", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"},
-"formula7": {"a": "7", "b": "18", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"},
-"formula_clover": {"a": "3", "b": "7", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "0.1"},
-"formula4": {"a": "4", "b": "2", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "1.0"},
-"form_42": {"a": "4", "b": "2", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "min_t": "0.0", "max_t": "6.283185307179586", "interval": "1.0"}
-}
+{"formula3": {"a": "3", "b": "1", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
+"formula7": {"a": "7", "b": "1", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
+"formula19": {"a": "19", "b": "1", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
+"formula24": {"a": "24", "b": "1", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}}
 </pre>
 
 You can manually edit the JSON files in a text editor, but there are a few things to keep in mind.
@@ -70,16 +68,16 @@ This is a link property, linking the fp object to a spreadsheet.  By default, it
 When this is True, the formula properties (a,b,c,X,Y,Z,t,t_max, and interval) are all set to readonly.  You won't be able to modify the properties in the fp object's property view when this is True.  Instead, you must modify the appropriate cells in the spreadsheet.  The fp object automatically updates its properties from the spreadsheet when they change.  Set this to False if you would prefer to modify the properties in the fp object rather than in the spreadsheet.  But if you set it to True again your property changes will be overwritten with the values from the spreadsheet.  Use the Update Spreadsheet property/command trigger to push the data to the spreadsheet first if you don't want the property values to be clobbered.
 ### JSON Group
 You can link a text file to the feature python object.  In such a text file you can save/load formulas in JSON format.  Note: merely linking the file does nothing but set the file name in the File property.  You must then trigger the Read File property to read in the contents (which will overwrite existing formulas).  If you want to save your current formula to the file first, then use the Append File command to append the current formula to the JSON file before reading it in.
-#### Preset Name
-This is the name of the current preset (formula).  It is a string property that you can modify.  But modifying it alone does not change the name of the currently selected preset.  You must trigger the Rename Preset property (see below).
-#### Rename Preset
-[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to change the name of the current preset (as currently selected in the Presets property) to the string currently in the Preset Name property field.  By default, when a new formula is created (or when a new JSON file is initiated) the default name given to it is "formula" or sometimes "formula1", "formula2", etc.  If you want to change the name to something more meaningful, such as "Spiral", enter "Spiral" into the Preset Name property and trigger the Rename Preset property from False to True.  Note: You must connect a JSON file to the feature python object using the File property, discussed below, before you can use all of the features in the JSON group.
+#### Formula Name
+This is the name of the current formula.  It is a string property that you can modify.  But modifying it alone does not change the name of the currently selected formula.  You must trigger the Rename Formula property (see below).
+#### Rename Formula
+[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to change the name of the current formula (as currently selected in the Formulas property) to the string currently in the Formula Name property field.  By default, when a new formula is created (or when a new JSON file is initiated) the default name given to it is "formula" or sometimes "formula1", "formula2", etc.  If you want to change the name to something more meaningful, such as "Spiral", enter "Spiral" into the Formula Name property and trigger the Rename Formula property from False to True.  Note: You must connect a JSON file to the feature python object using the File property, discussed below, before you can use all of the features in the JSON group.
 #### File
 This is the JSON file connected to the fp object.  It is essentially a text string containing the path to the linked file.  By default, it is empty.  You can click the "[...]" button to open the file open dialog to select a file or create a new one by entering the name into the File property field.  Make sure you have write access to the folder you choose.  In Linux something like ~/Documents/myjsonfile.txt would work.  In Windows, maybe use c:\users\YOURUSERNAME\Documents\myjsonfile.txt.  When you connect the file it is not automatically read in.  You must toggle Read File property to read in the data.  This is to allow you to append current data to the file before reading it in.
 
-A JSON file may have more than one formula stored in it.  Each formula is given a name, e.g. formula, formula1, etc.  Or you can assign your own custom name if you prefer.  All of the formulas get populated into the Presets property when you read the file, which presents as a drop down list from which you can select the desired formula.
+A JSON file may have more than one formula stored in it.  Each formula is given a name, e.g. formula, formula2, etc.  Or you can assign your own custom name if you prefer.  All of the formulas get populated into the Presets property when you read the file, which presents as a drop down list from which you can select the desired formula.
 #### New Formula
-[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to create a new formula and add it to the Presets property.  It is given a default name, such as "formula", "formula1", "formula2", etc., whichever one is first available.  You can change this name to a more meaningful one as described above im the Rename Preset documentation.  All of the Trigger properties are boolean properties that are normally False.  You trigger them by setting them to True.  They reset themselves to False after running the command.
+[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to create a new formula and add it to the Presets property.  It is given a default name, such as "formula", "formula2", "formula3", etc., whichever one is first available.  You can change this name to a more meaningful one as described above im the Rename Preset documentation.  All of the Trigger properties are boolean properties that are normally False.  You trigger them by setting them to True.  They reset themselves to False after running the command.
 #### Delete Formula
 [Trigger] Deletes the currently selected preset.  It does not modify the linked JSON file.  You must trigger Write File or Append File to make changes to the file (or edit it manually outside FreeCAD -- see Open File below).
 #### Open File
@@ -89,7 +87,7 @@ A JSON file may have more than one formula stored in it.  Each formula is given 
 #### Write File
 [Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to save the current formulas to the JSON file.  Everything in the JSON file will be overwritten.  Use Append File if you just want to add to the file the current formula.  You must trigger this command in order to save any changes to the JSON file unless you made the changes outside the fp object, such as using Notepad in Windows.  
 #### Append File
-Append current formula to the end of the linked JSON file.  Note: at present you must append each formula one by one.  On my TODO list is to append all formulas in one go, overwriting any existing formulas of the same name.
+Append formulas to the linked JSON file.  If there is already a formula with the same name in the file, then it is skipped and a warning shown in the report view.  You will need to rename any formulas with conflicting names.
 
 ### Equation1 and Equation2 Groups
 #### a,b,c,X,Y,Z
@@ -136,8 +134,15 @@ Supported math functions:<br/><br/>
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 
 ### ChangeLog
-
-* 2020.08.31<br/>
+* 2021.08.31.rev2<br/>
+** This revision breaks all compatability with all existing objects, spreadsheets, and JSON files created with earlier versions.<br/>
+It might even crash FreeCAD if you try to open a file containing an existing FP object.  The workaround for this, if needed, is to temporarily
+delete the macro, restart FreeCAD, open the file and delete the old object.  Then re-install the macro and create a new FP object with the same
+formulas.  JSON files can be manually edited by renaming "min_t" and "max_t" keys to "t" and "t_max", respectively.  Spreadsheet aliases
+should be renamed to "t_min" and "t_max" because "t" is not a valid alias.<br/>
+** Presets property renamed to Formulas
+** RenamePresets property renamed to RenameFormulas
+* 2021.08.31<br/>
 ** fixed bug in fnumber regex, credit: edwilliams16 at FreeCAD forum
 ** removed unnecessary fixDots() preparser
 * 2021.08.30<br/>
