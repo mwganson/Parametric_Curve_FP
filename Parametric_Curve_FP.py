@@ -15,7 +15,12 @@ import Part
 import json
 import os, sys
 import subprocess, os 
-import platform 
+import platform
+import re
+import locale
+
+SEPARATOR = locale.localeconv()['decimal_point']
+
 #In order to avoid using eval() and the security implications therefrom, I have borrowed and modified
 #some code for using pyparsing
 #https://github.com/pyparsing/pyparsing/blob/master/examples/fourFn.py
@@ -91,6 +96,7 @@ def BNF():
         # or use provided pyparsing_common.number, but convert back to str:
         # fnumber = ppc.number().addParseAction(lambda t: str(t[0]))
         fnumber = Regex(r"[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?")
+        #fnumber = Regex('[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?')
         ident = Word(alphas, alphanums + "_$")
 
         plus, minus, mult, div = map(Literal, "+-*/")
@@ -222,16 +228,14 @@ def evaluate(s, d={}):
     else:
         return val
 
+
+#credit openBrain of FreeCAD forum for this function
 def fixDots(s):
-    #I stink at reg ex, so this inefficient function exists
-    """convert .1 to 0.1 or 6+.1 to 6+0.1"""
-    if s[0]==".":
-        s = "0"+s
-    indices = [i for i,letter in enumerate(s) if letter == "." and s[i-1] not in "0123456789" and i!= 0]
-    while indices:
-        s = s[:indices[0]]+"0"+s[indices[0]:]
-        indices = [i for i,letter in enumerate(s) if letter == "." and s[i-1] not in "0123456789" and i != 0]
-    return s
+    if SEPARATOR == ",":
+        s = s.replace(",",".")
+        return re.sub(r'(^|\D)\.(\d+)', r'\g<1>0.\g<2>', s).replace(".",",")
+    else:
+        return re.sub(r'(^|\D)\.(\d+)', r'\g<1>0.\g<2>', s)
 
 
 class Curve:
@@ -257,7 +261,7 @@ class Curve:
         obj.addProperty("App::PropertyFile","File","JSON","JSON format file to contain data")
         obj.addProperty("App::PropertyEnumeration","Presets","JSON","Presets loaded from JSON file")
         obj.addProperty("App::PropertyBool","WriteFile","JSON","[Trigger] Updates JSON file with current data.  WARNING: will overwrite all current data, use AppendFile to add current formula to file.").WriteFile = False
-        obj.addProperty("App::PropertyBool","ChangePresetName","JSON","[Trigger] Changes current JSON_Preset name to string in PresetName").ChangePresetName = False
+        obj.addProperty("App::PropertyBool","RenamePreset","JSON","[Trigger] Changes current JSON_Preset name to string in PresetName").RenamePreset = False
         obj.addProperty("App::PropertyString","PresetName","JSON","Modify this for changing formula name, and then toggle Change Preset Name to True")
         obj.addProperty("App::PropertyBool","NewFormula","JSON","[Trigger] Creates new formula adds to presets").NewFormula = False
         obj.addProperty("App::PropertyBool","OpenFile","JSON","[Trigger] Opens JSON file in default system editor for text files.").OpenFile = False
@@ -507,6 +511,7 @@ class Curve:
             return
         else:
             self.setReadOnly(fp,True)
+        doc.openTransaction("Update from Spreadsheet")
 
         fp.a=str(fp.Spreadsheet.a_cell)
         fp.b=str(fp.Spreadsheet.b_cell)
@@ -522,27 +527,34 @@ class Curve:
             self.bInihibitUpdates=True
             self.updateJSONFormula(fp,fp.PresetName)
             self.bInihibitUpdates=False
-
+        doc.commitTransaction()
     def onChanged(self, fp, prop):
         '''Do something when a property has changed'''
+        doc = FreeCAD.ActiveDocument
         #FreeCAD.Console.PrintMessage("Change property: " + str(prop) + "\n")
         if prop == "Spreadsheet" and fp.Spreadsheet != None:
+            #doc.openTransaction("Update from spreadsheet") ##done in function
             self.updateFromSpreadsheet(fp)
-            self.setReadOnly(fp,True)
-            if hasattr(fp,"UseSpreadsheet"):
-                fp.UseSpreadsheet = True
-        elif prop == "Spreadsheet" and fp.Spreadsheet == None:
+            #doc.commitTransaction()
+        elif prop == "UseSpreadsheet" and fp.UseSpreadsheet == True:
+            fp.UseSpreadsheet = True
+            self.setReadOnly(fp, True)
+        elif prop == "UseSpreadsheet" and fp.UseSpreadsheet == False:
+            self.setReadOnly(fp,False)
+        elif prop == "Spreadsheet" and fp.Spreadsheet == None: #user removed link to Spreadsheet
             self.setReadOnly(fp,False)
 
         elif prop == "UpdateSpreadsheet" and fp.UpdateSpreadsheet == True:
+            doc.openTransaction("Update to Spreadsheet")
             self.bInhibitRecompute = True
             self.updateToSpreadsheet(fp)
             fp.UpdateSpreadsheet = False
+            doc.commitTransaction()
 
         elif prop == "File" and fp.File != None:
             #self.readJSONFile(fp)
-            FreeCAD.Console.PrintMessage("File property updated.  You must enable Read File property to read in the contents, which will overwrite existing formula unless it is appended to the file first.\n")
-            pass #user will need to trigger read manually
+            FreeCAD.Console.PrintMessage("You must read the file with Read File property to import into object.\n")
+
         elif prop == "Presets" and fp.File != None:
             self.bInihibitUpdates = True
             self.updateJSONFormula(fp,fp.Presets)
@@ -553,14 +565,18 @@ class Curve:
             self.bInhibitRecompute = True
             self.writeJSONFile(fp)
             fp.WriteFile = False
-        elif prop == "ChangePresetName" and fp.ChangePresetName == True and fp.File != None:
+        elif prop == "RenamePreset" and fp.RenamePreset == True and fp.File != None:
+            doc.openTransaction("Rename preset")
             self.bInhibitRecompute = True
             self.renamePreset(fp)
-            fp.ChangePresetName = False
+            fp.RenamePreset = False
+            doc.commitTransaction()
         elif prop == "NewFormula" and fp.NewFormula == True:
+            doc.openTransaction("Create new formula")
             self.bInhibitRecompute = True
             self.newFormula(fp)
             fp.NewFormula = False
+            doc.commitTransaction()
         elif prop == "OpenFile" and fp.OpenFile == True:
             fp.OpenFile = False
             self.bInhibitRecompute = True
@@ -578,15 +594,19 @@ class Curve:
  
         elif prop == "ReadFile" and fp.ReadFile == True:
             fp.ReadFile = False
+            doc.openTransaction("Read file")
             if fp.File:
                 self.readJSONFile(fp)
+            doc.commitTransaction()
         elif prop == "AppendFile" and fp.AppendFile == True:
             fp.AppendFile = False
             self.bInhibitRecompute = True
             self.appendFile(fp)
         elif prop == "DeleteFormula" and fp.DeleteFormula == True:
+            doc.openTransaction("Delete formula")
             fp.DeleteFormula = False
             self.deleteFormula(fp)
+            doc.commitTransaction()
         elif prop == "a" or prop == "b" or prop == "c" or prop == "X" or prop == "Y" or prop == "Z" or prop == "t" or prop == "t_max" or prop == "Interval":
             if fp.PresetName and not self.bInihibitUpdates:
                 self.updateJSON_Data(fp,fp.Presets) #update self.JSON_Data on every property change
@@ -648,7 +668,7 @@ class Curve:
 
     def execute(self, fp):
         '''Do something when doing a recomputation, this method is mandatory'''
-        if self.bInhibitRecompute:
+        if self.bInhibitRecompute: #some things do not require a recompute, such as saving to JSON file or updating spreadsheet
             self.bInhibitRecompute = False
             return
         fp.Shape = self.makeCurve(fp)
