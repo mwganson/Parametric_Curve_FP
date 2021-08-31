@@ -5,7 +5,7 @@ __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lu
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = """Activate the tool and modify properties as desired"""
-__version__ = "2021.08.31"
+__version__ = "2021.08.31.rev2"
 
 
 import FreeCAD, FreeCADGui
@@ -17,9 +17,7 @@ import os, sys
 import subprocess, os 
 import platform
 import re
-import locale
 
-SEPARATOR = locale.localeconv()['decimal_point']
 
 # Albert Einstein once remarked how he "stood on the shoulders of giants" in giving credit to those
 # great thinkers who came before him and who helped pave the way for his Theory of Relativity.
@@ -260,17 +258,17 @@ class Curve:
         obj.addProperty("App::PropertyBool","Closed","Curve","Whether curve is closed").Closed=True
         obj.addProperty("App::PropertyString","Version", "Base", "Version this object was created with").Version = __version__
         obj.addProperty("App::PropertyBool","MakeBSpline","Curve","Make BSPline if True or Polygon if False").MakeBSpline=True
-        obj.addProperty("App::PropertyLink","Spreadsheet","Spreadsheet","Link a spreadsheet to populate the values")
-        obj.addProperty("App::PropertyBool","UpdateSpreadsheet","Spreadsheet","[Trigger] If True data gets saved to spreadsheet, aliases created, if necessary, then this gets set back to False\nIf no spreadsheet is linked a new one is created.").UpdateSpreadsheet=False
+        obj.addProperty("App::PropertyLink","Spreadsheet","Spreadsheet","Link a spreadsheet")
+        obj.addProperty("App::PropertyBool","UpdateSpreadsheet","Spreadsheet","[Trigger] Push current formula to linked spreadsheet, creates one and links it if necessary.").UpdateSpreadsheet=False
         obj.addProperty("App::PropertyBool","UseSpreadsheet","Spreadsheet","If True, poperties are readonly and must come from spreadsheet.  If false, spreadsheet is ignored and properties are set to read/write.").UseSpreadsheet=False
         obj.addProperty("App::PropertyString","Continuity","Curve","Continuity of Curve")
         obj.setEditorMode('Continuity',1)
         obj.addProperty("App::PropertyFile","File","JSON","JSON format file to contain data")
-        obj.addProperty("App::PropertyEnumeration","Presets","JSON","Presets loaded from JSON file")
+        obj.addProperty("App::PropertyEnumeration","Formulas","JSON","Formulas in JSON data").Formulas=["formula"]
         obj.addProperty("App::PropertyBool","WriteFile","JSON","[Trigger] Updates JSON file with current data.  WARNING: will overwrite all current data, use AppendFile to add current formula to file.").WriteFile = False
-        obj.addProperty("App::PropertyBool","RenamePreset","JSON","[Trigger] Changes current JSON_Preset name to string in PresetName").RenamePreset = False
-        obj.addProperty("App::PropertyString","PresetName","JSON","Modify this for changing formula name, and then toggle Change Preset Name to True")
-        obj.addProperty("App::PropertyBool","NewFormula","JSON","[Trigger] Creates new formula adds to presets").NewFormula = False
+        obj.addProperty("App::PropertyBool","RenameFormula","JSON","[Trigger] Changes current Formula name to string in FormulaName").RenameFormula = False
+        obj.addProperty("App::PropertyString","FormulaName","JSON","Modify this for changing formula name, and then toggle Rename Formula to True")
+        obj.addProperty("App::PropertyBool","NewFormula","JSON","[Trigger] Creates new formula adds to Formulas").NewFormula = False
         obj.addProperty("App::PropertyBool","OpenFile","JSON","[Trigger] Opens JSON file in default system editor for text files.").OpenFile = False
         obj.addProperty("App::PropertyBool","ReadFile","JSON","[Trigger] Reads JSON file.  WARNING: will clobber current formula, use AppendFile to save current formula to file before reading if you want to save it").OpenFile = False
         obj.addProperty("App::PropertyBool","AppendFile","JSON","[Trigger] Appends current formula to JSON file.").AppendFile = False
@@ -280,6 +278,7 @@ class Curve:
         self.previousFormula = ""
         self.bInihibitUpdates = False;
         self.bInhibitRecompute = False;
+        self.newFormula(obj) #initialize with a new formula
 
     def setReadOnly(self,fp,bReadOnly):
         """if bReadOnly = True, we set the properties linked to the spreadsheet readonly, else set them normal mode"""
@@ -315,21 +314,25 @@ class Curve:
             return
         self.JSON_Data = json.load(f)
         f.close()
-        preset_names = []
+        formula_names = []
         for pn in self.JSON_Data:
-            preset_names.append(pn)
-        fp.Presets = preset_names
-        #Presets, when the left hand operand, accepts a list
-        #but when the right hand operand, it gives a string, the current preset
+            formula_names.append(pn)
+        fp.Formulas = formula_names
+        #Formulas, when the left hand operand, accepts a list
+        #but when the right hand operand, it gives a string, the current formula
         self.bInihibitUpdates=True
-        self.updateJSONFormula(fp,fp.Presets)
+        self.updateJSONFormula(fp,fp.Formulas)
         self.bInihibitUpdates=False
     def deleteFormula(self,fp):
-        if not fp.PresetName:
-            FreeCAD.Console.PrintError("No preset selected.\n")
+        if not fp.FormulaName:
+            FreeCAD.Console.PrintError("No formula selected.\n")
             return
-        self.JSON_Data.pop(fp.PresetName,None)
-        fp.Presets = list(self.JSON_Data.keys())
+        self.JSON_Data.pop(fp.FormulaName,None)
+        if len(self.JSON_Data.keys()) == 0:
+            FreeCAD.Console.PrintMessage("Must have at least one formula, new one created using existing equations.\n")
+            self.newFormula(fp) #must have at least one formula
+            FreeCAD.ActiveDocument.recompute()
+        fp.Formulas = list(self.JSON_Data.keys())
 
 
     def appendFile(self,fp):
@@ -346,32 +349,17 @@ class Curve:
             self.writeJSONFile(fp)
             fp.File = os.path.realpath(f.name)
             return
-        data = json.load(f)
-        #self.JSON_Data = json.load(f)
+        data = json.load(f) #load current data first
         f.close()
-        if fp.PresetName:
-            trialName = fp.PresetName
-        else:
-            trialName = "formula"
-        ii = 2
-        while (trialName in data):
-            ii += 1
-            trialName = trialName+str(ii)
-        data[trialName] ={
-                "a":fp.a,
-                "b":fp.b,
-                "c":fp.c,
-                "X":fp.X,
-                "Y":fp.Y,
-                "Z":fp.Z,
-                "min_t":str(fp.t),
-                "max_t":str(fp.t_max),
-                "interval":str(fp.Interval)
-                }
-        self.JSON_Data = data
+        for formula in self.JSON_Data.keys():
+            if formula in data: #find a new unique name for this formula and append it
+                FreeCAD.Console.PrintWarning("Skipping: "+formula+" (already in file).  Rename "+formula+" and try again, if desired.\n")
+            else: #formula not already in data file
+                FreeCAD.Console.PrintMessage("Appending: "+formula+" to file.\n")
+                data[formula] = self.JSON_Data[formula]
+
         with open(fp.File,"w") as outfile:
             json.dump(data,outfile)
-        FreeCAD.Console.PrintMessage("JSON file updated, formula: "+fp.PresetName+" appended successfully.\n")
 
     def checkFile(self,fp):
         if not fp.File: #checks to see if there is filename in File property
@@ -390,25 +378,24 @@ class Curve:
                 "X":fp.X,
                 "Y":fp.Y,
                 "Z":fp.Z,
-                "min_t":str(fp.t),
-                "max_t":str(fp.t_max),
+                "t":str(fp.t),
+                "t_max":str(fp.t_max),
                 "interval":str(fp.Interval)
                 }}
         with open(fp.File,"w") as outfile:
             json.dump(self.JSON_Data,outfile)
 
-    def renamePreset(self,fp):
+    def renameFormula(self,fp):
         if not self.checkFile(fp):
             return
-        if fp.Presets in self.JSON_Data.keys():
-            self.JSON_Data[fp.PresetName] = self.JSON_Data.pop(fp.Presets)
-            fp.Presets = list(self.JSON_Data.keys())
-            fp.Presets = fp.PresetName
+        if fp.Formulas in self.JSON_Data.keys():
+            self.JSON_Data[fp.FormulaName] = self.JSON_Data.pop(fp.Formulas)
+            fp.Formulas = list(self.JSON_Data.keys())
+            fp.Formulas = fp.FormulaName
 
     def newFormula(self,fp):
-        if not self.checkFile(fp):
-            return
-        ii = 2
+
+        ii = 1
         trialName = "formula"
         while (trialName in self.JSON_Data):
             ii += 1
@@ -421,13 +408,13 @@ class Curve:
                 "X":fp.X,
                 "Y":fp.Y,
                 "Z":fp.Z,
-                "min_t":str(fp.t),
-                "max_t":str(fp.t_max),
+                "t":str(fp.t),
+                "t_max":str(fp.t_max),
                 "interval":str(fp.Interval)
                 }
-        fp.Presets = list(self.JSON_Data.keys())
-        fp.Presets = trialName
-        fp.PresetName = trialName
+        fp.Formulas = list(self.JSON_Data.keys())
+        fp.Formulas = trialName
+        fp.FormulaName = trialName
 
     def updateJSON_Data(self,fp,formulaName): #update json data from current fp settings
         if hasattr(fp,"a"):
@@ -443,9 +430,9 @@ class Curve:
         if hasattr(fp,"Z"):
             self.JSON_Data[formulaName]["Z"] = fp.Z
         if hasattr(fp,"t"):
-            self.JSON_Data[formulaName]["min_t"] = str(fp.t)
+            self.JSON_Data[formulaName]["t"] = str(fp.t)
         if hasattr(fp,"t_max"):
-            self.JSON_Data[formulaName]["max_t"] = str(fp.t_max)
+            self.JSON_Data[formulaName]["t_max"] = str(fp.t_max)
         if hasattr(fp,"Interval"):
             self.JSON_Data[formulaName]["interval"] = str(fp.Interval)
 
@@ -457,8 +444,8 @@ class Curve:
         fp.X = self.JSON_Data[formulaName]["X"]
         fp.Y = self.JSON_Data[formulaName]["Y"]
         fp.Z = self.JSON_Data[formulaName]["Z"]
-        fp.t = float(self.JSON_Data[formulaName]["min_t"])
-        fp.t_max = float(self.JSON_Data[formulaName]["max_t"])
+        fp.t = float(self.JSON_Data[formulaName]["t"])
+        fp.t_max = float(self.JSON_Data[formulaName]["t_max"])
         fp.Interval = float(self.JSON_Data[formulaName]["interval"])
 
 
@@ -467,6 +454,7 @@ class Curve:
         if fp.Spreadsheet == None:
             sheet = FreeCAD.ActiveDocument.addObject("Spreadsheet::Sheet","PC_Sheet")
             fp.Spreadsheet = sheet
+            FreeCAD.Console.PrintMessage("Spreadsheet linked.\nSet Use Spreadsheet to True to use those aliases.\n")
 
         if not hasattr(fp.Spreadsheet,"a_cell"):
             if not sheet and fp.UseSpreadsheet: #not a new spreadsheet, but one already that exists
@@ -492,10 +480,10 @@ class Curve:
                 fp.Spreadsheet.setAlias('B5',"Y")
                 fp.Spreadsheet.set('A6',"Z")
                 fp.Spreadsheet.setAlias('B6',"Z")
-                fp.Spreadsheet.set('A7',"min_t")
-                fp.Spreadsheet.setAlias('B7',"min_t")
-                fp.Spreadsheet.set('A8',"max_t")
-                fp.Spreadsheet.setAlias('B8',"max_t")
+                fp.Spreadsheet.set('A7',"t_min")
+                fp.Spreadsheet.setAlias('B7',"t_min")
+                fp.Spreadsheet.set('A8',"t_max")
+                fp.Spreadsheet.setAlias('B8',"t_max")
                 fp.Spreadsheet.set('A9',"interval")
                 fp.Spreadsheet.setAlias('B9',"interval")
 
@@ -505,19 +493,20 @@ class Curve:
         fp.Spreadsheet.set('X',fp.X)
         fp.Spreadsheet.set('Y',fp.Y)
         fp.Spreadsheet.set('Z',fp.Z)
-        fp.Spreadsheet.set('min_t',str(fp.t))
-        fp.Spreadsheet.set('max_t',str(fp.t_max))
+        fp.Spreadsheet.set('t_min',str(fp.t))
+        fp.Spreadsheet.set('t_max',str(fp.t_max))
         fp.Spreadsheet.set('interval',str(fp.Interval))
 
 
     def updateFromSpreadsheet(self,fp):
-        if not hasattr(fp.Spreadsheet,"a_cell"):
+        if not fp.Spreadsheet or not hasattr(fp.Spreadsheet,"a_cell"):
             return
         if fp.UseSpreadsheet == False:
             self.setReadOnly(fp,False)
             return
         else:
             self.setReadOnly(fp,True)
+        doc = FreeCAD.ActiveDocument
         doc.openTransaction("Update from Spreadsheet")
 
         fp.a=str(fp.Spreadsheet.a_cell)
@@ -526,13 +515,13 @@ class Curve:
         fp.X=str(fp.Spreadsheet.X)
         fp.Y=str(fp.Spreadsheet.Y)
         fp.Z=str(fp.Spreadsheet.Z)
-        fp.t=fp.Spreadsheet.min_t 
-        fp.t_max=fp.Spreadsheet.max_t
+        fp.t=fp.Spreadsheet.t_min 
+        fp.t_max=fp.Spreadsheet.t_max
         fp.Interval=fp.Spreadsheet.interval
 
-        if fp.PresetName:
+        if fp.FormulaName:
             self.bInihibitUpdates=True
-            self.updateJSONFormula(fp,fp.PresetName)
+            self.updateJSONFormula(fp,fp.FormulaName)
             self.bInihibitUpdates=False
         doc.commitTransaction()
     def onChanged(self, fp, prop):
@@ -540,11 +529,11 @@ class Curve:
         doc = FreeCAD.ActiveDocument
         #FreeCAD.Console.PrintMessage("Change property: " + str(prop) + "\n")
         if prop == "Spreadsheet" and fp.Spreadsheet != None:
-            #doc.openTransaction("Update from spreadsheet") ##done in function
             self.updateFromSpreadsheet(fp)
-            #doc.commitTransaction()
+
         elif prop == "UseSpreadsheet" and fp.UseSpreadsheet == True:
-            fp.UseSpreadsheet = True
+            if not fp.Spreadsheet:
+                FreeCAD.Console.PrintError("No spreadsheet linked.\n  Create one with Update Spreadsheet or link existing one first.\n")
             self.setReadOnly(fp, True)
         elif prop == "UseSpreadsheet" and fp.UseSpreadsheet == False:
             self.setReadOnly(fp,False)
@@ -560,23 +549,28 @@ class Curve:
 
         elif prop == "File" and fp.File != None:
             #self.readJSONFile(fp)
-            FreeCAD.Console.PrintMessage("You must read the file with Read File property to import into object.\n")
+            FreeCAD.Console.PrintMessage("File linked.\n\
+Use Read File to import into object.\n\
+Use Append File to append formulas to file.\n\
+Use Write File to overwrite all data in file.\n\
+Use Open File to open file in external editor.\n\
+")
 
-        elif prop == "Presets" and fp.File != None:
+        elif prop == "Formulas" and fp.File != None:
             self.bInihibitUpdates = True
-            self.updateJSONFormula(fp,fp.Presets)
+            self.updateJSONFormula(fp,fp.Formulas)
             self.bInihibitUpdates = False
-            fp.PresetName = fp.Presets
+            fp.FormulaName = fp.Formulas
 
         elif prop == "WriteFile" and fp.File != None and fp.WriteFile == True:
             self.bInhibitRecompute = True
             self.writeJSONFile(fp)
             fp.WriteFile = False
-        elif prop == "RenamePreset" and fp.RenamePreset == True and fp.File != None:
-            doc.openTransaction("Rename preset")
+        elif prop == "RenameFormula" and fp.RenameFormula == True and fp.File != None:
+            doc.openTransaction("Rename formula")
             self.bInhibitRecompute = True
-            self.renamePreset(fp)
-            fp.RenamePreset = False
+            self.renameFormula(fp)
+            fp.RenameFormula = False
             doc.commitTransaction()
         elif prop == "NewFormula" and fp.NewFormula == True:
             doc.openTransaction("Create new formula")
@@ -615,8 +609,8 @@ class Curve:
             self.deleteFormula(fp)
             doc.commitTransaction()
         elif prop == "a" or prop == "b" or prop == "c" or prop == "X" or prop == "Y" or prop == "Z" or prop == "t" or prop == "t_max" or prop == "Interval":
-            if fp.PresetName and not self.bInihibitUpdates:
-                self.updateJSON_Data(fp,fp.Presets) #update self.JSON_Data on every property change
+            if fp.FormulaName and not self.bInihibitUpdates:
+                self.updateJSON_Data(fp,fp.Formulas) #update self.JSON_Data on every property change
 
     def makeCurve(self, fp):
         self.updateFromSpreadsheet(fp)
