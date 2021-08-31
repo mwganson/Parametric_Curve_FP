@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-__title__ = "3DParametricCurveFP"
+__title__ = "Parametric_Curve_FP"
 __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = """Activate the tool and modify properties as desired"""
-__version__ = "2021.08.29.rev2"
+__version__ = "2021.08.31"
 
 
 import FreeCAD, FreeCADGui
@@ -21,9 +21,23 @@ import locale
 
 SEPARATOR = locale.localeconv()['decimal_point']
 
-#In order to avoid using eval() and the security implications therefrom, I have borrowed and modified
-#some code for using pyparsing
-#https://github.com/pyparsing/pyparsing/blob/master/examples/fourFn.py
+# Albert Einstein once remarked how he "stood on the shoulders of giants" in giving credit to those
+# great thinkers who came before him and who helped pave the way for his Theory of Relativity.
+# I'm certainly no Einstein, but in making this macro, I, too, have built upon the work of others
+# who came before.  Thanks, in particular, to Gomez Lucio, author of the original parametric curve
+# macro, and to Laurent Despeyroux, who extended it, and Paul McGuire for his work on FourFn parser.
+# Also thanks to users openBrain and edwilliams16 of the FreeCAD forum for their help with regular
+# expression parsing.
+
+# In order to avoid using eval() and the security implications therefrom, I have borrowed and modified
+# some code for using pyparsing.  I added the ability to include a dictionary of constants to evaluate().
+# For example, evaluate("a+b*3", {"a":1,"b":2}) evalutes to 7.  I also added some additional math functions
+# to the fn dictionary.  And user edwilliams16 at the FreeCAD forum has fixed a bug in the fnumber
+# regular expression, which was failing in cases of ".5" instead of "0.5". --Mark
+
+# <begin imported code from FourFN.py>
+
+# https://github.com/pyparsing/pyparsing/blob/master/examples/fourFn.py
 #
 
 # fourFn.py
@@ -95,8 +109,8 @@ def BNF():
         #                    Optional(e + Word("+-"+nums, nums)))
         # or use provided pyparsing_common.number, but convert back to str:
         # fnumber = ppc.number().addParseAction(lambda t: str(t[0]))
-        fnumber = Regex(r"[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?")
-        #fnumber = Regex('[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?')
+        #fnumber = Regex(r"[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?")
+        fnumber = Regex(r'[-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?')
         ident = Word(alphas, alphanums + "_$")
 
         plus, minus, mult, div = map(Literal, "+-*/")
@@ -212,11 +226,11 @@ def evaluate_stack(s,d):
 #example:
 #d = {"a":1,"b":2}
 # then where "a" or "b" is found a value is substituted
-# evaluate("a+b",d) thus returns 3
+# evaluate("a+b",d) thus returns 3 --Mark
 def evaluate(s, d={}):
-    if s == "":
+    if s == "": #return 0 in case the user has left the field blank --Mark
         return 0
-    s = fixDots(s)
+
     exprStack[:] = []
     try:
         results = BNF().parseString(s, parseAll=True)
@@ -228,14 +242,7 @@ def evaluate(s, d={}):
     else:
         return val
 
-
-#credit openBrain of FreeCAD forum for this function
-def fixDots(s):
-    if SEPARATOR == ",":
-        s = s.replace(",",".")
-        return re.sub(r'(^|\D)\.(\d+)', r'\g<1>0.\g<2>', s).replace(".",",")
-    else:
-        return re.sub(r'(^|\D)\.(\d+)', r'\g<1>0.\g<2>', s)
+# <end imported code from FourFn.py>
 
 
 class Curve:
