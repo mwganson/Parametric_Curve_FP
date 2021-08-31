@@ -87,7 +87,9 @@ A JSON file may have more than one formula stored in it.  Each formula is given 
 #### Read File
 [Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to read or reload the JSON file from disk in the event changes have been made to the file outside of the fp object or in the case where you simply want to reset the fp object to the contents of the file.
 #### Write File
-[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to save the current formulas to the JSON file.  Everything in the JSON file will be overwritten.  Use Append File if you just want to add to the file the current formula.  You must trigger this command in order to save any changes to the JSON file unless you made the changes outside the fp object, such as using Notepad in Windows.  Note: at present you must append each formula one by one.  On my TODO list is to append all formulas in one go, overwriting any existing formulas of the same name.
+[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to save the current formulas to the JSON file.  Everything in the JSON file will be overwritten.  Use Append File if you just want to add to the file the current formula.  You must trigger this command in order to save any changes to the JSON file unless you made the changes outside the fp object, such as using Notepad in Windows.  
+#### Append File
+Append current formula to the end of the linked JSON file.  Note: at present you must append each formula one by one.  On my TODO list is to append all formulas in one go, overwriting any existing formulas of the same name.
 
 ### Equation1 and Equation2 Groups
 #### a,b,c,X,Y,Z
