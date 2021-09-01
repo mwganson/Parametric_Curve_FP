@@ -1,5 +1,3 @@
-As of version 2021.08.31.rev2 JSON files, Spreadsheets, and feature python objects created with previous versions are no longer compatible and might even crash FreeCAD if you attempt to open a file with a previously created FP object in it.
-
 # Parametric_Curve_FP
 Create a parametric curve feature python object in FreeCAD
 
@@ -52,8 +50,10 @@ The Feature Python object (ParametricCurve) has a number of properties separated
 ### Curve Group
 #### Closed (Default: True)
 The property sets the curve to either closed or not closed.  If it's set to True the wire will close itself (connect the first vertex to the last vertex).  This is required if you are to use the curve to create a solid with a Pad, Extrude, etc.
-#### Make BSpline (Default: True)
-If set to True a BSpline object is created for the curve.  If False, a polygon is created instead.
+#### Shape Type (Default: BSpline)
+Choose your shape type here.  Options are: BSpline, Polygon, Points.
+#### Points
+This is a list of vectors used to create the output shape.  Note: if Shape Type is "Polygon" and Closed = True, the first point is also copied to the end of the points list.
 #### Version
 This gives the version used to create this object (not necessarily the same as currently installed.)  It is in the form of the date of last modification, e.g. 2021.08.27.
 #### Continuity
@@ -134,6 +134,11 @@ Supported math functions:<br/><br/>
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 
 ### ChangeLog
+* 2021.09.01<br/>
+** Fix bug in renameFormula() so now we don't switch to the first formula in Formulas, but rather remain in that formula.
+** Do away with MakeBSpline boolean  (breaks existing objects)
+** Add new ShapeType enumeration with "BSpline,"Polygon","Points" as options
+** Add Points property (list of vectors used to create shape)
 * 2021.08.31.rev2<br/>
 ** This revision breaks all compatability with all existing objects, spreadsheets, and JSON files created with earlier versions.<br/>
 It might even crash FreeCAD if you try to open a file containing an existing FP object.  The workaround for this, if needed, is to temporarily
