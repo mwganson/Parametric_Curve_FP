@@ -5,7 +5,7 @@ __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lu
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = """Activate the tool and modify properties as desired"""
-__version__ = "2021.08.31.rev2"
+__version__ = "2021.09.01"
 
 
 import FreeCAD, FreeCADGui
@@ -256,8 +256,10 @@ class Curve:
         obj.addProperty("App::PropertyFloat","t_max","Equation3(T Params)","Max t").t_max = 2*pi
         obj.addProperty("App::PropertyFloat","Interval","Equation3(T Params)","Interval").Interval = 0.1
         obj.addProperty("App::PropertyBool","Closed","Curve","Whether curve is closed").Closed=True
+        obj.addProperty("App::PropertyVectorList","Points","Curve","Points used to make the curve. Regenerated each recompute.").Points =[]
         obj.addProperty("App::PropertyString","Version", "Base", "Version this object was created with").Version = __version__
-        obj.addProperty("App::PropertyBool","MakeBSpline","Curve","Make BSPline if True or Polygon if False").MakeBSpline=True
+        obj.addProperty("App::PropertyEnumeration","ShapeType","Curve","Options: BSpline, Polygon, Points").ShapeType=["BSpline","Polygon","Points"]
+        obj.ShapeType = "BSpline" #default
         obj.addProperty("App::PropertyLink","Spreadsheet","Spreadsheet","Link a spreadsheet")
         obj.addProperty("App::PropertyBool","UpdateSpreadsheet","Spreadsheet","[Trigger] Push current formula to linked spreadsheet, creates one and links it if necessary.").UpdateSpreadsheet=False
         obj.addProperty("App::PropertyBool","UseSpreadsheet","Spreadsheet","If True, poperties are readonly and must come from spreadsheet.  If false, spreadsheet is ignored and properties are set to read/write.").UseSpreadsheet=False
@@ -386,12 +388,12 @@ class Curve:
             json.dump(self.JSON_Data,outfile)
 
     def renameFormula(self,fp):
-        if not self.checkFile(fp):
-            return
+        newName = fp.FormulaName
         if fp.Formulas in self.JSON_Data.keys():
             self.JSON_Data[fp.FormulaName] = self.JSON_Data.pop(fp.Formulas)
             fp.Formulas = list(self.JSON_Data.keys())
-            fp.Formulas = fp.FormulaName
+            fp.Formulas = newName
+
 
     def newFormula(self,fp):
 
@@ -655,17 +657,21 @@ Use Open File to open file in external editor.\n\
 
             matriz.append(FreeCAD.Vector(fxx,fyy,fzz))
             t+=intv
-        if fp.MakeBSpline == False and fp.Closed == True:
+        if fp.ShapeType == "Polygon" and fp.Closed == True:
             matriz.append(matriz[0])
+        fp.Points = matriz
         curva = Part.makePolygon(matriz)
-        if fp.MakeBSpline == True:
-            #curve = Shape = Draft.makeBSpline(curva,closed=fp.Closed,face=False)
+        if fp.ShapeType == "BSpline":
             curve = Part.BSplineCurve()
             curve.interpolate(matriz, PeriodicFlag=fp.Closed)
-            curve = curve.toShape()
-        else:
-            curve = curva
-        return curve
+            return curve.toShape()
+        elif fp.ShapeType == "Polygon":
+            return curva
+        else: #fp.ShapeType == "Points":
+            vertices = [Part.Vertex(p) for p in fp.Points]
+            comp = Part.Compound(vertices)
+            return comp
+
 
     def execute(self, fp):
         '''Do something when doing a recomputation, this method is mandatory'''
