@@ -3,6 +3,10 @@ Create a parametric curve feature python object in FreeCAD
 
 ![fp object](fp.jpg)
 
+Toolbar icon: <a download="Parametric_Curve_FP.svg" href="Parametric_Curve_FP.svg" title="Toolbar icon">
+    <img alt="toolbar icon" src="Parametric_Curve_FP.svg">
+</a>
+
 ## Installation
 Place Parametric_Curve_FP.py in your macros directory.  It cannot be installed via the AddonManager at this time, but I shall have that ready shortly.
 
