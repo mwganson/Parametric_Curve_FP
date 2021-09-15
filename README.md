@@ -18,6 +18,7 @@ You can also, in addition to modifying the properties directly, elect to use a s
 * a_cell -- String that contains the a formula.
 * b_cell -- String that contains the b formula.
 * c_cell -- String that contains the c formula.
+* [optional] d1,d2,d3,d4, etc. -- d formula held as string list in Property "d".
 * X -- String that contains the X formula.
 * Y -- String that contains the Y formula.
 * Z -- String that contains the Z formula.
@@ -65,7 +66,7 @@ This is a link property, linking the fp object to a spreadsheet.  By default, it
 #### Update Spreadsheet (Default: False)
 [Trigger] This property serves as a command button.  When you set it to True it triggers the fp object to save the properties to the connected spreadsheet, overwriting any existing values.  If no spreadsheet is connected it will create a new spreadsheet for you, link it in the Spreadsheet property, add the required aliases, and set their values.  It's a way of saving the current properties to a new spreadsheet for later use.  In all other cases the fp object pulls values from the connected spreadsheet (if Use Spreadsheet = True, see below), but in this case it is pushing those values to the spreadsheet.  After it pushes the data to the spreadsheet it resets itself back to False.
 #### Use Spreadsheet (Default: False)
-When this is True, the formula properties (a,b,c,X,Y,Z,t,t_max, and interval) are all set to readonly.  You won't be able to modify the properties in the fp object's property view when this is True.  Instead, you must modify the appropriate cells in the spreadsheet.  The fp object automatically updates its properties from the spreadsheet when they change.  Set this to False if you would prefer to modify the properties in the fp object rather than in the spreadsheet.  But if you set it to True again your property changes will be overwritten with the values from the spreadsheet.  Use the Update Spreadsheet property/command trigger to push the data to the spreadsheet first if you don't want the property values to be clobbered.
+When this is True, the formula properties (a,b,c,d,X,Y,Z,t,t_max, and interval) are all set to readonly.  You won't be able to modify the properties in the fp object's property view when this is True.  Instead, you must modify the appropriate cells in the spreadsheet.  The fp object automatically updates its properties from the spreadsheet when they change.  Set this to False if you would prefer to modify the properties in the fp object rather than in the spreadsheet.  But if you set it to True again your property changes will be overwritten with the values from the spreadsheet.  Use the Update Spreadsheet property/command trigger to push the data to the spreadsheet first if you don't want the property values to be clobbered.
 ### JSON Group
 You can link a text file to the feature python object.  In such a text file you can save/load formulas in JSON format.  Note: merely linking the file does nothing but set the file name in the File property.  You must then trigger the Read File property to read in the contents (which will overwrite existing formulas).  If you want to save your current formula to the file first, then use the Append File command to append the current formula to the JSON file before reading it in.
 #### Formula Name
@@ -90,16 +91,27 @@ A JSON file may have more than one formula stored in it.  Each formula is given 
 Append formulas to the linked JSON file.  If there is already a formula with the same name in the file, then it is skipped and a warning shown in the report view.  You will need to rename any formulas with conflicting names.
 
 ### Equation1 and Equation2 Groups
-#### a,b,c,X,Y,Z
+#### a,b,c,d,X,Y,Z
 These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Basically, anything in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.<br/>
 <br/>
 a -> only refer to t<br/>
 b -> only refer to a and t<br/>
 c -> only refer to a, b, and t<br/>
+d -> d1 only refer to a, b, c, and t, d2 only refer to a, b, c, d1, and t, d3 only refer to a, b, c, d1, d2, and t...<br/>
 X -> only refer to a, b, c, and t<br/>
 Y -> only refer to a, b, c, X, and t<br/>
 Z -> only refer to a, b, c, X, Y, and t<br/>
 <br/>
+#### d variables
+The d variables are all held in a single property ("d").  This is a string list, so d is really a list of variables d1, d2, d3, d4, d5, etc., however many you want
+to have you can have until you run out of computer memory or get tired of typing them all in.  To add them you must use FreeCAD's string list property editor.  Click on the value field for the d property, and then click the [...] button to open the editor.  There you have list of lines numbered 1 through n.  Click on line 1, enter your value, press Enter on the keyboard to register that entry and move down to line 2, and so on.  Line 1 represents d1, Line 2 represents d2, etc.  You must only reference d1 from d2, d1 and d2 from d3, etc.<br/>
+<br/>
+d1 -> a, b, c, t<br/>
+d2 -> a, b, c, t, d1<br/>
+d3 -> a, b, c, t, d1, d2<br/>
+d4 -> a, b, c, t, d1, d2, d3<br/>
+d5 -> a, b, c, t, d1, d2, d3, d4<br/>
+...<br/>
 Supported math functions:<br/><br/>
     "sin": math.sin<br/>
     "cos": math.cos<br/>
@@ -134,6 +146,12 @@ Supported math functions:<br/><br/>
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 
 ### ChangeLog
+* 2021.09.15<br/>
+* Add d variables d1, d2, d3, etc.
+* Setup code in prepration to be able to put the macro in the wiki for availability in addon manager.<br/>
+* The new code will allow created objects to remain parametric after saving file, restarting FreeCAD, reloading file<br/>
+* all while only using a single .py file. We can do this now, but only with 2 files, 1 to create the object, 1 to hold the class information.<br/>
+* But this is not yet complete, so for now continue using Make_Parametric_Curve.FCMacro until next release.<br/>
 * 2021.09.01<br/>
 ** Fix bug in renameFormula() so now we don't switch to the first formula in Formulas, but rather remain in that formula.
 ** Do away with MakeBSpline boolean  (breaks existing objects)
