@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-
+########
+#my_code = """
+########
 __title__ = "Parametric_Curve_FP"
 __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
-__usage__ = """Activate the tool and modify properties as desired"""
-__version__ = "2021.09.01"
+__usage__ = '''Activate the tool and modify properties as desired'''
+__version__ = "2021.09.15"
 
 
 import FreeCAD, FreeCADGui
@@ -62,10 +64,12 @@ from pyparsing import (
     CaselessKeyword,
     Suppress,
     delimitedList,
+#    ParserElement,
 )
 import math
 import operator
 
+#ParserElement.enablePackrat()
 exprStack = []
 
 
@@ -85,7 +89,7 @@ bnf = None
 
 
 def BNF():
-    """
+    '''
     expop   :: '^'
     multop  :: '*' | '/'
     addop   :: '+' | '-'
@@ -94,7 +98,7 @@ def BNF():
     factor  :: atom [ expop factor ]*
     term    :: factor [ multop factor ]*
     expr    :: term [ addop term ]*
-    """
+    '''
     global bnf
     if not bnf:
         # use CaselessKeyword for e and pi, to avoid accidentally matching
@@ -191,26 +195,26 @@ fn = {
 }
 
 
-def evaluate_stack(s,d):
+def evaluate_stack(s,vars):
     op, num_args = s.pop(), 0
     if isinstance(op, tuple):
         op, num_args = op
     if op == "unary -":
-        return -evaluate_stack(s,d)
+        return -evaluate_stack(s,vars)
     if op in "+-*/^":
         # note: operands are pushed onto the stack in reverse order
-        op2 = evaluate_stack(s,d)
-        op1 = evaluate_stack(s,d)
+        op2 = evaluate_stack(s,vars)
+        op1 = evaluate_stack(s,vars)
         return opn[op](op1, op2)
     elif op == "PI":
         return math.pi  # 3.1415926535
     elif op == "E":
         return math.e  # 2.718281828
-    elif op in d:
-        return d[op]
+    elif op in vars:
+        return vars[op]
     elif op in fn:
         # note: args are pushed onto the stack in reverse order
-        args = reversed([evaluate_stack(s,d) for _ in range(num_args)])
+        args = reversed([evaluate_stack(s,vars) for _ in range(num_args)])
         return fn[op](*args)
     elif op[0].isalpha():
         raise Exception("invalid identifier '%s'" % op)
@@ -220,19 +224,19 @@ def evaluate_stack(s,d):
             return int(op)
         except ValueError:
             return float(op)
-#d is a dictionary of variable names
+#vars is a dictionary of variable names
 #example:
-#d = {"a":1,"b":2}
+#vars = {"a":1,"b":2}
 # then where "a" or "b" is found a value is substituted
-# evaluate("a+b",d) thus returns 3 --Mark
-def evaluate(s, d={}):
+# evaluate("a+b",vars) thus returns 3 --Mark
+def evaluate(s, vars={}):
     if s == "": #return 0 in case the user has left the field blank --Mark
         return 0
 
     exprStack[:] = []
     try:
         results = BNF().parseString(s, parseAll=True)
-        val = evaluate_stack(exprStack[:],d)
+        val = evaluate_stack(exprStack[:],vars)
     except ParseException as pe:
         raise Exception(s, "failed parse:", str(pe))
     except Exception as e:
@@ -249,6 +253,7 @@ class Curve:
         obj.addProperty("App::PropertyString","a","Equation1(a,b,c)","a(t)").a = "37"
         obj.addProperty("App::PropertyString","b","Equation1(a,b,c)","b(a,t)").b = "1"
         obj.addProperty("App::PropertyString","c","Equation1(a,b,c)","c(a,b,t)").c = "(a+cos(a*t)*2)*b"
+        obj.addProperty("App::PropertyStringList","d","Equation1(a,b,c)","d1(a,b,c,t)"+chr(10)+"d2(a,b,c,t,d1)"+chr(10)+"d3(a,b,c,t,d1,d2)"+chr(10)+"d4(a,b,c,t,d1,d2,d3)"+chr(10)+"..."+chr(10))
         obj.addProperty("App::PropertyString","X","Equation2(X,Y,Z)","X(a,b,c,t)").X = "cos(t)*c"
         obj.addProperty("App::PropertyString","Y","Equation2(X,Y,Z)","Y(a,b,c,t)").Y = "sin(t)*c"
         obj.addProperty("App::PropertyString","Z","Equation2(X,Y,Z)","Z(a,b,c,t)").Z = "0"
@@ -283,7 +288,7 @@ class Curve:
         self.newFormula(obj) #initialize with a new formula
 
     def setReadOnly(self,fp,bReadOnly):
-        """if bReadOnly = True, we set the properties linked to the spreadsheet readonly, else set them normal mode"""
+        '''if bReadOnly = True, we set the properties linked to the spreadsheet readonly, else set them normal mode'''
         if bReadOnly:
             mode = 1
         else:
@@ -293,6 +298,7 @@ class Curve:
         fp.setEditorMode('a',mode)
         fp.setEditorMode('b',mode)
         fp.setEditorMode('c',mode)
+        fp.setEditorMode('d',mode)
         fp.setEditorMode('X',mode)
         fp.setEditorMode('Y',mode)
         fp.setEditorMode('Z',mode)
@@ -310,7 +316,7 @@ class Curve:
             #assume user entered name for new file
             f = open(fp.File,"w")
             f.close()
-            FreeCAD.Console.PrintMessage("New JSON file created: "+str(os.path.realpath(f.name))+"\n")
+            FreeCAD.Console.PrintMessage("New JSON file created: "+str(os.path.realpath(f.name))+chr(10))
             self.writeJSONFile(fp)
             fp.File = os.path.realpath(f.name)
             return
@@ -327,11 +333,11 @@ class Curve:
         self.bInihibitUpdates=False
     def deleteFormula(self,fp):
         if not fp.FormulaName:
-            FreeCAD.Console.PrintError("No formula selected.\n")
+            FreeCAD.Console.PrintError("No formula selected."+chr(10))
             return
         self.JSON_Data.pop(fp.FormulaName,None)
         if len(self.JSON_Data.keys()) == 0:
-            FreeCAD.Console.PrintMessage("Must have at least one formula, new one created using existing equations.\n")
+            FreeCAD.Console.PrintMessage("Must have at least one formula, new one created using existing equations."+chr(10))
             self.newFormula(fp) #must have at least one formula
             FreeCAD.ActiveDocument.recompute()
         fp.Formulas = list(self.JSON_Data.keys())
@@ -347,7 +353,7 @@ class Curve:
             #assume user entered name for new file
             f = open(fp.File,"w")
             f.close()
-            FreeCAD.Console.PrintMessage("New JSON file created: "+str(os.path.realpath(f.name))+"\n")
+            FreeCAD.Console.PrintMessage("New JSON file created: "+str(os.path.realpath(f.name))+""+chr(10))
             self.writeJSONFile(fp)
             fp.File = os.path.realpath(f.name)
             return
@@ -355,9 +361,9 @@ class Curve:
         f.close()
         for formula in self.JSON_Data.keys():
             if formula in data: #find a new unique name for this formula and append it
-                FreeCAD.Console.PrintWarning("Skipping: "+formula+" (already in file).  Rename "+formula+" and try again, if desired.\n")
+                FreeCAD.Console.PrintWarning("Skipping: "+formula+" (already in file).  Rename "+formula+" and try again, if desired."+chr(10))
             else: #formula not already in data file
-                FreeCAD.Console.PrintMessage("Appending: "+formula+" to file.\n")
+                FreeCAD.Console.PrintMessage("Appending: "+formula+" to file."+chr(10))
                 data[formula] = self.JSON_Data[formula]
 
         with open(fp.File,"w") as outfile:
@@ -365,7 +371,7 @@ class Curve:
 
     def checkFile(self,fp):
         if not fp.File: #checks to see if there is filename in File property
-            FreeCAD.Console.PrintError("No linked JSON file.  Create a new JSON file or link one via the File property.  You can also just enter a name in the File property to create a new file.\n")
+            FreeCAD.Console.PrintError("No linked JSON file.  Create a new JSON file or link one via the File property.  You can also just enter a name in the File property to create a new file."+chr(10))
             return False
         return True
     def writeJSONFile(self,fp):
@@ -377,6 +383,7 @@ class Curve:
                 "a":fp.a,
                 "b":fp.b,
                 "c":fp.c,
+                "d":fp.d,
                 "X":fp.X,
                 "Y":fp.Y,
                 "Z":fp.Z,
@@ -407,6 +414,7 @@ class Curve:
                 "a":fp.a,
                 "b":fp.b,
                 "c":fp.c,
+                "d":fp.d,
                 "X":fp.X,
                 "Y":fp.Y,
                 "Z":fp.Z,
@@ -425,6 +433,8 @@ class Curve:
             self.JSON_Data[formulaName]["b"] = fp.b
         if hasattr(fp,"c"):        
             self.JSON_Data[formulaName]["c"] = fp.c
+        if hasattr(fp,"d"):
+            self.JSON_Data[formulaName]["d"] = fp.d
         if hasattr(fp,"X"):
             self.JSON_Data[formulaName]["X"] = fp.X
         if hasattr(fp,"Y"):
@@ -439,10 +449,11 @@ class Curve:
             self.JSON_Data[formulaName]["interval"] = str(fp.Interval)
 
     def updateJSONFormula(self,fp,formulaName):
-        #FreeCAD.Console.PrintMessage("updateJSONFormula\n")
+        #FreeCAD.Console.PrintMessage("updateJSONFormula"+chr(10))
         fp.a = self.JSON_Data[formulaName]["a"]
         fp.b = self.JSON_Data[formulaName]["b"]
         fp.c = self.JSON_Data[formulaName]["c"]
+        fp.d = self.JSON_Data[formulaName]["d"]
         fp.X = self.JSON_Data[formulaName]["X"]
         fp.Y = self.JSON_Data[formulaName]["Y"]
         fp.Z = self.JSON_Data[formulaName]["Z"]
@@ -456,7 +467,7 @@ class Curve:
         if fp.Spreadsheet == None:
             sheet = FreeCAD.ActiveDocument.addObject("Spreadsheet::Sheet","PC_Sheet")
             fp.Spreadsheet = sheet
-            FreeCAD.Console.PrintMessage("Spreadsheet linked.\nSet Use Spreadsheet to True to use those aliases.\n")
+            FreeCAD.Console.PrintMessage("Spreadsheet linked.\\nSet Use Spreadsheet to True to use those aliases."+chr(10))
 
         if not hasattr(fp.Spreadsheet,"a_cell"):
             if not sheet and fp.UseSpreadsheet: #not a new spreadsheet, but one already that exists
@@ -488,10 +499,14 @@ class Curve:
                 fp.Spreadsheet.setAlias('B8',"t_max")
                 fp.Spreadsheet.set('A9',"interval")
                 fp.Spreadsheet.setAlias('B9',"interval")
-
+                for dd in range(0,len(fp.d)):
+                    fp.Spreadsheet.set('A'+str(dd+10),'d'+str(dd+1))
+                    fp.Spreadsheet.setAlias('B'+str(dd+10),'d'+str(dd+1))
         fp.Spreadsheet.set('a_cell',fp.a)
         fp.Spreadsheet.set('b_cell',fp.b)
         fp.Spreadsheet.set('c_cell',fp.c)
+        for dd in range(0,len(fp.d)):
+            fp.Spreadsheet.set('d'+str(dd+1),fp.d[dd])
         fp.Spreadsheet.set('X',fp.X)
         fp.Spreadsheet.set('Y',fp.Y)
         fp.Spreadsheet.set('Z',fp.Z)
@@ -514,6 +529,12 @@ class Curve:
         fp.a=str(fp.Spreadsheet.a_cell)
         fp.b=str(fp.Spreadsheet.b_cell)
         fp.c=str(fp.Spreadsheet.c_cell)
+        dd=0
+        k = "d"+str(dd+1)
+        while hasattr(fp.Spreadsheet,k):
+            fp.d[dd]=getattr(fp.Spreadsheet,k)
+            dd += 1
+            k = "d"+str(dd+1)
         fp.X=str(fp.Spreadsheet.X)
         fp.Y=str(fp.Spreadsheet.Y)
         fp.Z=str(fp.Spreadsheet.Z)
@@ -529,13 +550,13 @@ class Curve:
     def onChanged(self, fp, prop):
         '''Do something when a property has changed'''
         doc = FreeCAD.ActiveDocument
-        #FreeCAD.Console.PrintMessage("Change property: " + str(prop) + "\n")
+        #FreeCAD.Console.PrintMessage("Change property: " + str(prop) + ""+chr(10))
         if prop == "Spreadsheet" and fp.Spreadsheet != None:
             self.updateFromSpreadsheet(fp)
 
         elif prop == "UseSpreadsheet" and fp.UseSpreadsheet == True:
             if not fp.Spreadsheet:
-                FreeCAD.Console.PrintError("No spreadsheet linked.\n  Create one with Update Spreadsheet or link existing one first.\n")
+                FreeCAD.Console.PrintError("No spreadsheet linked.\\n  Create one with Update Spreadsheet or link existing one first."+chr(10))
             self.setReadOnly(fp, True)
         elif prop == "UseSpreadsheet" and fp.UseSpreadsheet == False:
             self.setReadOnly(fp,False)
@@ -551,11 +572,11 @@ class Curve:
 
         elif prop == "File" and fp.File != None:
             #self.readJSONFile(fp)
-            FreeCAD.Console.PrintMessage("File linked.\n\
-Use Read File to import into object.\n\
-Use Append File to append formulas to file.\n\
-Use Write File to overwrite all data in file.\n\
-Use Open File to open file in external editor.\n\
+            FreeCAD.Console.PrintMessage("File linked.\\n\
+Use Read File to import into object.\\n\
+Use Append File to append formulas to file.\\n\
+Use Write File to overwrite all data in file.\\n\
+Use Open File to open file in external editor.\\n\
 ")
 
         elif prop == "Formulas" and fp.File != None:
@@ -593,7 +614,7 @@ Use Open File to open file in external editor.\n\
                 elif 'Darwin' in sys:
                     subprocess.Popen(["open", fp.File])
                 else:
-                    FreeCAD.Console.PrintError("We were unable to determine your platform, and thus cannot open your file for you.\n")
+                    FreeCAD.Console.PrintError("We were unable to determine your platform, and thus cannot open your file for you."+chr(10))
  
         elif prop == "ReadFile" and fp.ReadFile == True:
             fp.ReadFile = False
@@ -610,13 +631,14 @@ Use Open File to open file in external editor.\n\
             fp.DeleteFormula = False
             self.deleteFormula(fp)
             doc.commitTransaction()
-        elif prop == "a" or prop == "b" or prop == "c" or prop == "X" or prop == "Y" or prop == "Z" or prop == "t" or prop == "t_max" or prop == "Interval":
+        elif prop == "a" or prop == "b" or prop == "c" or prop == "d" or prop == "X" or prop == "Y" or prop == "Z" or prop == "t" or prop == "t_max" or prop == "Interval":
             if fp.FormulaName and not self.bInihibitUpdates:
                 self.updateJSON_Data(fp,fp.Formulas) #update self.JSON_Data on every property change
 
     def makeCurve(self, fp):
         self.updateFromSpreadsheet(fp)
-        d = {"a":0,"b":0,"c":0,"X":0,"Y":0,"Z":0,"t":0}
+        vars = {"a":0,"b":0,"c":0,"X":0,"Y":0,"Z":0,"t":0}
+
         fa = fp.a
         fb = fp.b
         fc = fp.c
@@ -626,30 +648,34 @@ Use Open File to open file in external editor.\n\
         t = fp.t
         tf = fp.t_max
         intv = fp.Interval
-        dd=(tf-t)/intv
+        increment=(tf-t)/intv
         matriz = []
-        for i in range(int(dd)):
+        for i in range(int(increment)):
 
             try:
-                d["t"] = t
+                vars["t"] = t
                 value="a ->"+str(fa)
-                a=evaluate(fa,d)
-                d["a"]=a
+                a=evaluate(fa,vars)
+                vars["a"]=a
                 value="b ->"+str(fb)
-                b=evaluate(fb,d)
-                d["b"] = b
+                b=evaluate(fb,vars)
+                vars["b"] = b
                 value="c ->"+str(fc)
-                c=evaluate(fc,d)
-                d["c"]=c
+                c=evaluate(fc,vars)
+                vars["c"]=c
+                for dd in range(0,len(fp.d)):#fp.d[0] = d1, fp.d[1] = d2, etc
+                    k = "d"+str(dd+1)# where dd = 0, k = "d1"
+                    value = k+" ->"+str(fp.d[dd])
+                    vars[k] = evaluate(fp.d[dd],vars)
                 value="X ->"+str(fx)
-                fxx=evaluate(fx,d)
-                d["X"]=fxx
+                fxx=evaluate(fx,vars)
+                vars["X"]=fxx
                 value="Y ->"+str(fy)
-                fyy=evaluate(fy,d)
-                d["Y"]=fyy
+                fyy=evaluate(fy,vars)
+                vars["Y"]=fyy
                 value="Z ->"+str(fz)
-                fzz=evaluate(fz,d)
-                d["Z"]=fzz
+                fzz=evaluate(fz,vars)
+                vars["Z"]=fzz
             except ZeroDivisionError:
                 FreeCAD.Console.PrintError("Error division by zero in calculus of "+value+"() for t="+str(t)+" !")
             except:
@@ -683,10 +709,10 @@ Use Open File to open file in external editor.\n\
             fp.Continuity = fp.Shape.Continuity
         else:
             fp.Continuity = "N/A"
-        #FreeCAD.Console.PrintMessage("Recompute Python Curve feature\n")
+        #FreeCAD.Console.PrintMessage("Recompute Python Curve feature"+chr(10))
 
 class CurveVP:
-    """Creates a 3D parametric curve"""
+    '''Creates a 3D parametric curve'''
     def __init__(self, obj):
         '''Set this object to the proxy object of the actual view provider'''
         obj.Proxy = self
@@ -698,10 +724,6 @@ class CurveVP:
     def updateData(self, fp, prop):
         '''If a property of the handled feature has changed we have the chance to handle this here'''
         # fp is the handled feature, prop is the name of the property that has changed
-        #l = fp.getPropertyByName("Length")
-        #w = fp.getPropertyByName("Width")
-        #h = fp.getPropertyByName("Height")
-        #self.scale.scaleFactor.setValue(float(l),float(w),float(h))
         pass
  
     def getDisplayModes(self,obj):
@@ -721,13 +743,13 @@ class CurveVP:
  
     def onChanged(self, vp, prop):
         '''Here we can do something when a single property got changed'''
-        #FreeCAD.Console.PrintMessage("Change property: " + str(prop) + "\n")
+        #FreeCAD.Console.PrintMessage("Change property: " + str(prop) + ""+chr(10))
 
  
     def getIcon(self):
         '''Return the icon in XPM format which will appear in the tree view. This method is\
                 optional and if not defined a default icon is shown.'''
-        return """
+        return '''
 /* XPM */
 static char *_ce4cf5b663f4b5f9c7b8e8d0afb135esksMX5u0XGPbxtkI[] = {
 /* columns rows colors chars-per-pixel */
@@ -1001,7 +1023,7 @@ static char *_ce4cf5b663f4b5f9c7b8e8d0afb135esksMX5u0XGPbxtkI[] = {
 ",X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,XoX5.*X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X"
 };
 
-"""
+'''
  
     def __getstate__(self):
         '''When saving the document this object gets stored using Python's json module.\
@@ -1013,7 +1035,34 @@ static char *_ce4cf5b663f4b5f9c7b8e8d0afb135esksMX5u0XGPbxtkI[] = {
         '''When restoring the serialized object from document we have the chance to set some internals here.\
                 Since no data were serialized nothing needs to be done here.'''
         return None
+#########
+#"""
+#########
+#this is a workaround for getting a feature python object created in a macro to be still parametric
+#upon reloading the file to which the object was saved after restarting FreeCAD
+#the usual way is to create 2 files, one to import the class and instantiate the object, the other the object class
+#but with this workaround call can be included in the same file, we just need to "import" the code as a string
+#first step is to enclose all the code to be imported inside a triple double quote literal """many lines of code"""
+#replace any instances of """ with ''' inside the string literals
+#any instances of "\n" must be replaced with chr(10) or, alternatively "\\n" but the later makes it harder to
+#debug the code by commenting out the workaround bits and running as normal code for debugging
+#copy and modify the code below, replacing instances of Parametric_Curve_FP with the name of your .py file
 
+#credit to Mila Nautikus for his answer to a question on stackoverflow, which I modified here
+#in this example the filename is Parametric_Curve_FP.py
+#https://stackoverflow.com/questions/5362771/how-to-load-a-module-from-code-in-a-string
+
+##########
+#import sys, importlib
+
+#my_name = 'Parametric_Curve_FP' #filename = Parametric_Curve_FP.py, so this must be 'Parametric_Curve_FP'
+#my_spec = importlib.util.spec_from_loader(my_name, loader=None)
+
+#Parametric_Curve_FP = importlib.util.module_from_spec(my_spec)
+
+#exec(my_code, Parametric_Curve_FP.__dict__)
+#sys.modules['Parametric_Curve_FP'] = Parametric_Curve_FP
+##########
 
 
 def makeCurve():
@@ -1024,8 +1073,13 @@ def makeCurve():
     if not FreeCAD.ActiveDocument:
         FreeCAD.newDocument()
     pc=FreeCAD.ActiveDocument.addObject("Part::FeaturePython","ParametricCurve")
+
+##########
+#    Parametric_Curve_FP.Curve(pc)
+#    Parametric_Curve_FP.CurveVP(pc.ViewObject)
     Curve(pc)
     CurveVP(pc.ViewObject)
+#########
 
     FreeCAD.ActiveDocument.recompute()
     FreeCADGui.Selection.clearSelection()
@@ -1035,3 +1089,5 @@ def makeCurve():
     else:
         FreeCADGui.SendMsgToActiveView("ViewSelection")
 
+if __name__ == "__main__":
+    makeCurve()
