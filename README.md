@@ -4,7 +4,7 @@ Create a parametric curve feature python object in FreeCAD
 ![fp object](fp.jpg)
 
 ## Installation
-Place both .py files into your macros directory.  Run the Make_Parametric_Curve.py in FreeCAD to create the parametric curve object.  It cannot be installed via the AddonManager at this time.  You can download the files as a zip file by clicking the Code link and selecting download as zip option.  Extract them to a temporary folder and move the 2 .py files into your macros folder.
+Place Parametric_Curve_FP.py in your macros directory.  It cannot be installed via the AddonManager at this time, but I shall have that ready shortly.
 
 ## History
 This macro is based on the FreeCAD macro 3D Parametric Curve by Lucio Gomez and Laurent Despeyroux.  https://wiki.freecadweb.org/Macro_3D_Parametric_Curve
@@ -146,7 +146,9 @@ Supported math functions:<br/><br/>
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 
 ### ChangeLog
-* 2021.09.16.rev2<br/>
+* 2021.09.15.rev3<br/>
+** Eliminate need for Make_Parametric_Curve.FCMacro.  You can now run Parametric_Curve_FP.py directly.<br/>
+* 2021.09.15.rev2<br/>
 ** spreadsheet integration bug fixes
 * 2021.09.15<br/>
 * Add d variables d1, d2, d3, etc.
