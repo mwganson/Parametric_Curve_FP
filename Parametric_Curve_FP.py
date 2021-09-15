@@ -7,7 +7,7 @@ __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lu
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = '''Activate the tool and modify properties as desired'''
-__version__ = "2021.09.15"
+__version__ = "2021.09.15.rev2"
 
 
 import FreeCAD, FreeCADGui
@@ -506,6 +506,8 @@ class Curve:
         fp.Spreadsheet.set('b_cell',fp.b)
         fp.Spreadsheet.set('c_cell',fp.c)
         for dd in range(0,len(fp.d)):
+            fp.Spreadsheet.set('A'+str(dd+10),'d'+str(dd+1))
+            fp.Spreadsheet.setAlias('B'+str(dd+10),'d'+str(dd+1))
             fp.Spreadsheet.set('d'+str(dd+1),fp.d[dd])
         fp.Spreadsheet.set('X',fp.X)
         fp.Spreadsheet.set('Y',fp.Y)
@@ -531,10 +533,12 @@ class Curve:
         fp.c=str(fp.Spreadsheet.c_cell)
         dd=0
         k = "d"+str(dd+1)
+        new_d = []
         while hasattr(fp.Spreadsheet,k):
-            fp.d[dd]=getattr(fp.Spreadsheet,k)
-            dd += 1
+            new_d.append(str(getattr(fp.Spreadsheet,k)))
             k = "d"+str(dd+1)
+            dd += 1
+        fp.d = new_d
         fp.X=str(fp.Spreadsheet.X)
         fp.Y=str(fp.Spreadsheet.Y)
         fp.Z=str(fp.Spreadsheet.Z)
