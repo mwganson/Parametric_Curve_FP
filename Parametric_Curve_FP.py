@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 ########
-#my_code = """
+my_code = """
 ########
 __title__ = "Parametric_Curve_FP"
 __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = '''Activate the tool and modify properties as desired'''
-__version__ = "2021.09.15.rev2"
+__version__ = "2021.09.15.rev3"
 
 
 import FreeCAD, FreeCADGui
@@ -1040,7 +1040,7 @@ static char *_ce4cf5b663f4b5f9c7b8e8d0afb135esksMX5u0XGPbxtkI[] = {
                 Since no data were serialized nothing needs to be done here.'''
         return None
 #########
-#"""
+"""
 #########
 #this is a workaround for getting a feature python object created in a macro to be still parametric
 #upon reloading the file to which the object was saved after restarting FreeCAD
@@ -1057,15 +1057,15 @@ static char *_ce4cf5b663f4b5f9c7b8e8d0afb135esksMX5u0XGPbxtkI[] = {
 #https://stackoverflow.com/questions/5362771/how-to-load-a-module-from-code-in-a-string
 
 ##########
-#import sys, importlib
+import sys, importlib
 
-#my_name = 'Parametric_Curve_FP' #filename = Parametric_Curve_FP.py, so this must be 'Parametric_Curve_FP'
-#my_spec = importlib.util.spec_from_loader(my_name, loader=None)
+my_name = 'Parametric_Curve_FP' #filename = Parametric_Curve_FP.py, so this must be 'Parametric_Curve_FP'
+my_spec = importlib.util.spec_from_loader(my_name, loader=None)
 
-#Parametric_Curve_FP = importlib.util.module_from_spec(my_spec)
+Parametric_Curve_FP = importlib.util.module_from_spec(my_spec)
 
-#exec(my_code, Parametric_Curve_FP.__dict__)
-#sys.modules['Parametric_Curve_FP'] = Parametric_Curve_FP
+exec(my_code, Parametric_Curve_FP.__dict__)
+sys.modules['Parametric_Curve_FP'] = Parametric_Curve_FP
 ##########
 
 
@@ -1079,10 +1079,10 @@ def makeCurve():
     pc=FreeCAD.ActiveDocument.addObject("Part::FeaturePython","ParametricCurve")
 
 ##########
-#    Parametric_Curve_FP.Curve(pc)
-#    Parametric_Curve_FP.CurveVP(pc.ViewObject)
-    Curve(pc)
-    CurveVP(pc.ViewObject)
+    Parametric_Curve_FP.Curve(pc)
+    Parametric_Curve_FP.CurveVP(pc.ViewObject)
+    #Curve(pc)
+    #CurveVP(pc.ViewObject)
 #########
 
     FreeCAD.ActiveDocument.recompute()
