@@ -8,6 +8,7 @@ __license__ = "LGPL 2.1"
 __doc__ = "Parametric curve from formula"
 __usage__ = '''Activate the tool and modify properties as desired'''
 __version__ = "2021.09.15.rev3"
+__Files__='Parametric_Curve_FP.py'
 
 
 import FreeCAD, FreeCADGui
