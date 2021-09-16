@@ -8,7 +8,7 @@ Toolbar icon: <a download="Parametric_Curve_FP.svg" href="Parametric_Curve_FP.sv
 </a>
 
 ## Installation
-Place Parametric_Curve_FP.py in your macros directory.  It cannot be installed via the AddonManager at this time, but I shall have that ready shortly.
+Install using the Addon Manager in the Tools menu from the Macros tab.
 
 ## History
 This macro is based on the FreeCAD macro 3D Parametric Curve by Lucio Gomez and Laurent Despeyroux.  https://wiki.freecadweb.org/Macro_3D_Parametric_Curve
