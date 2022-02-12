@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2021.09.17"
-#__version__ = "2021.09.17"
+__version__ = "2022.02.12"
+#__version__ = "2022.02.12"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -258,6 +258,7 @@ __version__ = "2021.09.17"
 #        obj.addProperty("App::PropertyFloat","t_max","Equation3(T Params)","Max t").t_max = 2*pi
 #        obj.addProperty("App::PropertyFloat","Interval","Equation3(T Params)","Interval").Interval = 0.1
 #        obj.addProperty("App::PropertyBool","Closed","Curve","Whether curve is closed").Closed=True
+#        obj.addProperty("App::PropertyBool","PlusOneIteration","Curve","Fixes a bug, but changes existing behavior.  Set to False if it breaks an existing model.").PlusOneIteration = True
 #        obj.addProperty("App::PropertyVectorList","Points","Curve","Points used to make the curve. Regenerated each recompute.").Points =[]
 #        obj.addProperty("App::PropertyString","Version", "Base", "Version this object was created with").Version = __version__
 #        obj.addProperty("App::PropertyEnumeration","ShapeType","Curve","Options: BSpline, Polygon, Points").ShapeType=["BSpline","Polygon","Points"]
@@ -660,7 +661,10 @@ __version__ = "2021.09.17"
 #        intv = fp.Interval
 #        increment=(tf-t)/intv
 #        matriz = []
-#        for i in range(int(increment)):
+#        plus1 = 0
+#        if hasattr(fp,"PlusOneIteration") and fp.PlusOneIteration:
+#            plus1 = 1
+#        for i in range(int(increment)+plus1):
 
 #            try:
 #                vars["t"] = t
