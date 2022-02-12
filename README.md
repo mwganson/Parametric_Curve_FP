@@ -57,6 +57,8 @@ The Feature Python object (ParametricCurve) has a number of properties separated
 The property sets the curve to either closed or not closed.  If it's set to True the wire will close itself (connect the first vertex to the last vertex).  This is required if you are to use the curve to create a solid with a Pad, Extrude, etc.
 #### Shape Type (Default: BSpline)
 Choose your shape type here.  Options are: BSpline, Polygon, Points.
+#### PlusOneIteration (Default: True)
+Fixes a bug by adding one more iteration to the loop.  But if this causes a problem with an existing model, this can be set to False to keep the current (buggy) behavior.
 #### Points
 This is a list of vectors used to create the output shape.  Note: if Shape Type is "Polygon" and Closed = True, the first point is also copied to the end of the points list.
 #### Version
@@ -150,6 +152,8 @@ Supported math functions:<br/><br/>
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 
 ### ChangeLog
+* 2022.02.12<br/>
+* Add PlusOneIteration property<br/>
 * 2021.09.15.rev3<br/>
 ** Eliminate need for Make_Parametric_Curve.FCMacro.  You can now run Parametric_Curve_FP.py directly.<br/>
 * 2021.09.15.rev2<br/>
