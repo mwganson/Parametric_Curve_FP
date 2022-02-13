@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.02.12"
-#__version__ = "2022.02.12"
+__version__ = "2022.02.12.rev2"
+#__version__ = "2022.02.12.rev2"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -663,7 +663,10 @@ __version__ = "2022.02.12"
 #        matriz = []
 #        plus1 = 0
 #        if hasattr(fp,"PlusOneIteration") and fp.PlusOneIteration:
-#            plus1 = 1
+#            lastT = t + (int(increment)-1)*intv
+#            while lastT < tf:
+#                plus1 += 1
+#                lastT += intv
 #        for i in range(int(increment)+plus1):
 
 #            try:
