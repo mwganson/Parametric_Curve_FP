@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.02.13"
-#__version__ = "2022.02.13"
+__version__ = "2022.02.13.rev2"
+#__version__ = "2022.02.13.rev2"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -25,7 +25,7 @@ __version__ = "2022.02.13"
 ## who came before.  Thanks, in particular, to Gomez Lucio, author of the original parametric curve
 ## macro, and to Laurent Despeyroux, who extended it, and Paul McGuire for his work on FourFn parser.
 ## Also thanks to users openBrain and edwilliams16 of the FreeCAD forum for their help with regular
-## expression parsing.
+## expression parsing and testing / debugging / helping with other coding aspects.
 #
 ## In order to avoid using eval() and the security implications therefrom, I have borrowed and modified
 ## some code for using pyparsing.  I added the ability to include a dictionary of constants to evaluate().
@@ -658,19 +658,23 @@ __version__ = "2022.02.13"
 #        t = fp.t
 #        tf = fp.t_max
 #        intv = fp.Interval
+#        if (tf-t)*intv < 0:
+#            FreeCAD.Console.PrintWarning(f"Infinite loop avoided.  t_max - t * Interval cannot be less than 0.  Interval used will be {intv * -1}\n")
+#            intv *= -1
 #        iterations = int((tf-t)/intv)
 #        matriz = []
 #        plus1 = 1
 #        if hasattr(fp,"PlusOneIteration") and fp.PlusOneIteration:
 #            lastT = t + iterations * intv
-#            while lastT < tf:
+#            while lastT < tf and not math.isclose(lastT, tf): #don't add if almost equal
 #                plus1 += 1
 #                lastT += intv
+#        else:
+#            plus1 = 0  # restore old bug for compatibility
 #        for i in range(iterations + plus1):
 #            if hasattr(fp,"PlusOneIteration") and fp.PlusOneIteration:
-#                if i == int(iterations) + plus1 - 1: #last ieteration
-#                    if t != tf:
-#                        t = tf
+#                if i == int(iterations) + plus1 - 1: #last iteration
+#                    t = tf
 #            try:
 #                vars["t"] = t
 #                value="a ->"+str(fa)
