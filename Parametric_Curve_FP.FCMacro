@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.02.13.rev2"
-#__version__ = "2022.02.13.rev2"
+__version__ = "2022.02.13.rev3"
+#__version__ = "2022.02.13.rev3"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -658,7 +658,7 @@ __version__ = "2022.02.13.rev2"
 #        t = fp.t
 #        tf = fp.t_max
 #        intv = fp.Interval
-#        if (tf-t)*intv < 0:
+#        if (tf-t)*intv <= 0:
 #            FreeCAD.Console.PrintWarning(f"Infinite loop avoided.  t_max - t * Interval cannot be less than 0.  Interval used will be {intv * -1}\n")
 #            intv *= -1
 #        iterations = int((tf-t)/intv)
