@@ -152,6 +152,8 @@ Supported math functions:<br/><br/>
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 
 ### ChangeLog
+* 2022.02.14<br/>
+** make code slightly more robust when setting number of iterations
 * 2022.02.13.rev3<br/>
 ** check also (t_max - t) * Interval != 0.
 * 2022.02.13.rev2<br/>
