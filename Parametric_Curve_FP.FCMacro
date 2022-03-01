@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.02.14"
-#__version__ = "2022.02.14"
+__version__ = "2022.03.01"
+#__version__ = "2022.03.01"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -50,6 +50,11 @@ __version__ = "2022.02.14"
 ##
 ## Copyright 2003-2019 by Paul McGuire
 ##
+## ------- added by <TheMarkster> -- to fix conflict with another addon
+#syspath = sys.path
+#newsyspath = [sp for sp in sys.path if not "cadquery" in sp]
+#sys.path = newsyspath
+##-------------
 #from pyparsing import (
 #    Literal,
 #    Word,
@@ -63,6 +68,9 @@ __version__ = "2022.02.14"
 #    Suppress,
 #    delimitedList,
 #)
+##----------------
+#sys.path = syspath
+## ------- end <TheMarkster> code
 #import math
 #import operator
 #
