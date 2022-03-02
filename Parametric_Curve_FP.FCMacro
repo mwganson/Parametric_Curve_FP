@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.01"
-#__version__ = "2022.03.01"
+__version__ = "2022.03.01.rev2"
+#__version__ = "2022.03.01.rev2"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -44,8 +44,8 @@ __version__ = "2022.03.01"
 ## with support for scientific notation, and symbols for e and pi.
 ## Extended to add exponentiation and simple built-in functions.
 ## Extended test cases, simplified pushFirst method.
-## Removed unnecessary expr.suppress() call (thanks Nathaniel Peterson!), and added Group
-## Changed fnumber to use a Regex, which is now the preferred method
+## Removed unnecessary expr.suppress() call (thanks Nathaniel Peterson!), and added pyparsing.Group
+## Changed fnumber to use a pyparsing.Regex, which is now the preferred method
 ## Reformatted to latest pypyparsing features, support multiple and variable args to functions
 ##
 ## Copyright 2003-2019 by Paul McGuire
@@ -54,20 +54,23 @@ __version__ = "2022.03.01"
 #syspath = sys.path
 #newsyspath = [sp for sp in sys.path if not "cadquery" in sp]
 #sys.path = newsyspath
+#import pyparsing
+#import importlib
+#FreeCAD.Console.PrintLog(f"{importlib.reload(pyparsing)}\n")
 ##-------------
-#from pyparsing import (
-#    Literal,
-#    Word,
-#    Group,
-#    Forward,
-#    alphas,
-#    alphanums,
-#    Regex,
-#    ParseException,
-#    CaselessKeyword,
-#    Suppress,
-#    delimitedList,
-#)
+##from pyparsing import (
+##    pyparsing.Literal,
+##    pyparsing.Word,
+##    pyparsing.Group,
+##    pyparsing.Forward,
+##    pyparsing.alphas,
+##    pyparsing.alphanums,
+##    pyparsing.Regex,
+##    pyparsing.ParseException,
+##    pyparsing.CaselessKeyword,
+##    pyparsing.Suppress,
+##    pyparsing.delimitedList,
+##)
 ##----------------
 #sys.path = syspath
 ## ------- end <TheMarkster> code
@@ -105,48 +108,48 @@ __version__ = "2022.03.01"
 #    '''
 #    global bnf
 #    if not bnf:
-#        # use CaselessKeyword for e and pi, to avoid accidentally matching
+#        # use pyparsing.CaselessKeyword for e and pi, to avoid accidentally matching
 #        # functions that start with 'e' or 'pi' (such as 'exp'); Keyword
-#        # and CaselessKeyword only match whole words
-#        e = CaselessKeyword("E")
-#        pi = CaselessKeyword("PI")
-#        # fnumber = Combine(Word("+-"+nums, nums) +
-#        #                    Optional("." + Optional(Word(nums))) +
-#        #                    Optional(e + Word("+-"+nums, nums)))
+#        # and pyparsing.CaselessKeyword only match whole words
+#        e = pyparsing.CaselessKeyword("E")
+#        pi = pyparsing.CaselessKeyword("PI")
+#        # fnumber = Combine(pyparsing.Word("+-"+nums, nums) +
+#        #                    Optional("." + Optional(pyparsing.Word(nums))) +
+#        #                    Optional(e + pyparsing.Word("+-"+nums, nums)))
 #        # or use provided pyparsing_common.number, but convert back to str:
 #        # fnumber = ppc.number().addParseAction(lambda t: str(t[0]))
-#        #fnumber = Regex(r"[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?")
-#        fnumber = Regex(r'[-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?')
-#        ident = Word(alphas, alphanums + "_$")
+#        #fnumber = pyparsing.Regex(r"[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?")
+#        fnumber = pyparsing.Regex(r'[-+]?(?:(?:\d*\.\d+)|(?:\d+\.?))(?:[Ee][+-]?\d+)?')
+#        ident = pyparsing.Word(pyparsing.alphas, pyparsing.alphanums + "_$")
 #
-#        plus, minus, mult, div = map(Literal, "+-*/")
-#        lpar, rpar = map(Suppress, "()")
+#        plus, minus, mult, div = map(pyparsing.Literal, "+-*/")
+#        lpar, rpar = map(pyparsing.Suppress, "()")
 #        addop = plus | minus
 #        multop = mult | div
-#        expop = Literal("^")
+#        expop = pyparsing.Literal("^")
 #
-#        expr = Forward()
-#        expr_list = delimitedList(Group(expr))
+#        expr = pyparsing.Forward()
+#        expr_list = pyparsing.delimitedList(pyparsing.Group(expr))
 #        # add parse action that replaces the function identifier with a (name, number of args) tuple
 #        def insert_fn_argcount_tuple(t):
 #            fn = t.pop(0)
 #            num_args = len(t[0])
 #            t.insert(0, (fn, num_args))
 #
-#        fn_call = (ident + lpar - Group(expr_list) + rpar).setParseAction(
+#        fn_call = (ident + lpar - pyparsing.Group(expr_list) + rpar).setParseAction(
 #            insert_fn_argcount_tuple
 #        )
 #        atom = (
 #            addop[...]
 #            + (
 #                (fn_call | pi | e | fnumber | ident).setParseAction(push_first)
-#                | Group(lpar + expr + rpar)
+#                | pyparsing.Group(lpar + expr + rpar)
 #            )
 #        ).setParseAction(push_unary_minus)
 #
 #        # by defining exponentiation as "atom [ ^ factor ]..." instead of "atom [ ^ atom ]...", we get right-to-left
 #        # exponents, instead of left-to-right that is, 2^3^2 = 2^(3^2), not (2^3)^2.
-#        factor = Forward()
+#        factor = pyparsing.Forward()
 #        factor <<= atom + (expop + factor).setParseAction(push_first)[...]
 #        term = factor + (multop + factor).setParseAction(push_first)[...]
 #        expr <<= term + (addop + term).setParseAction(push_first)[...]
@@ -241,7 +244,7 @@ __version__ = "2022.03.01"
 #    try:
 #        results = BNF().parseString(s, parseAll=True)
 #        val = evaluate_stack(exprStack[:],vars)
-#    except ParseException as pe:
+#    except pyparsing.ParseException as pe:
 #        raise Exception(s, "failed parse:", str(pe))
 #    except Exception as e:
 #        raise Exception (s, "failed eval:", str(e), exprStack)
