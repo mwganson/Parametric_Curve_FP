@@ -144,6 +144,16 @@ Supported math functions:<br/><br/>
     "rad": math.radians<br/>
     "trunc": int<br/>
     "round": round<br/>
+    "mod": lambda a, b: a % b<br/>
+    "interval": lambda a, b, t: 1 * ((t >= a) and (t < b))<br/>
+    "lt":lambda a, b: 1 * (a < b)<br/>
+    "lte": lambda a, b: 1 * (a <= b)<br/>
+    "gt": lambda a, b: 1 * (a > b)<br/>
+    "gte": lambda a, b: 1 * (a >= b)<br/>
+    "isequal": lambda a, b: 1 * (a == b)<br/>
+    "isclose": lambda a, b: 1 * (math.isclose(a, b, abs_tol = 1e-9))<br/>
+    "isclosetol": lambda a, b, tol: 1 * (math.isclose(a, b, abs_tol = tol))<br/>
+    "floordiv": lambda a, b: a // b<br/>
  
  To do basic adding, subtracting, multiplying, dividing, use standard "+-\*/". For exponents instead of 3\*\*7 standard python syntax use 3^7 to do "3 to the power of 7".
 
