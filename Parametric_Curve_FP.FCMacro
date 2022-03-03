@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.02"
-#__version__ = "2022.03.02"
+__version__ = "2022.03.03"
+#__version__ = "2022.03.03"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -17,6 +17,7 @@ __version__ = "2022.03.02"
 #import subprocess, os 
 #import platform
 #import re
+#from PySide import QtGui,QtCore
 #
 #
 ## Albert Einstein once remarked how he "stood on the shoulders of giants" in giving credit to those
@@ -325,22 +326,25 @@ __version__ = "2022.03.02"
 #        fp.setEditorMode('t_max',mode)
 #        fp.setEditorMode('Interval',mode)
 #
-#    def readJSONFile(self,fp):
-#        if not self.checkFile(fp):
-#            return
-#        try:
-#            f = open(fp.File)
-#        except:
-#            #could not open file
-#            #assume user entered name for new file
-#            f = open(fp.File,"w")
+#    def readJSONFile(self,fp,txt=None):
+#        if txt == None:
+#            if not self.checkFile(fp):
+#                return
+#            try:
+#                f = open(fp.File)
+#            except:
+#                #could not open file
+#                #assume user entered name for new file
+#                f = open(fp.File,"w")
+#                f.close()
+#                FreeCAD.Console.PrintMessage("New JSON file created: "+str(os.path.realpath(f.name))+chr(10))
+#                self.writeJSONFile(fp)
+#                fp.File = os.path.realpath(f.name)
+#                return
+#            self.JSON_Data = json.load(f)
 #            f.close()
-#            FreeCAD.Console.PrintMessage("New JSON file created: "+str(os.path.realpath(f.name))+chr(10))
-#            self.writeJSONFile(fp)
-#            fp.File = os.path.realpath(f.name)
-#            return
-#        self.JSON_Data = json.load(f)
-#        f.close()
+#        else: #txt != None
+#            self.JSON_Data = json.loads(txt)
 #        formula_names = []
 #        for pn in self.JSON_Data:
 #            formula_names.append(pn)
@@ -777,6 +781,19 @@ __version__ = "2022.03.02"
 #        # fp is the handled feature, prop is the name of the property that has changed
 #        pass
 #
+#    def canDropObject(self, incoming):
+#        return incoming.isDerivedFrom("App::TextDocument")
+#
+#    def dropObject(self,vobj, incoming):
+#        if incoming.isDerivedFrom("App::TextDocument"):
+#            if incoming.Text:
+#                FreeCAD.Console.PrintWarning("Parametric_Curve_FP: Ensure document has been saved since last edit of Text document.\n")
+#                vobj.Object.Document.openTransaction("Drop Text Document")
+#                vobj.Object.Proxy.readJSONFile(vobj.Object,incoming.Text)
+#                vobj.Object.Document.commitTransaction()
+#            else:
+#                FreeCAD.Console.PrintError("Empty text document.  Save file and try again.\n")
+#
 #    def getDisplayModes(self,obj):
 #        '''Return a list of display modes.'''
 #        modes=[]
@@ -1096,9 +1113,26 @@ __version__ = "2022.03.02"
 
 def makeCurve(Parametric_Curve_FP):
     sheet = None
+    textDoc = None
+    txt = """
+{"coil": {"a": "6", "b": "1", "c": "20", "d": [], 
+"X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)",
+"t": "0.0", "t_max": "6.283185307179586", "interval": "0.02"}, 
+"holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
+"X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
+"t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
+"amoeba": {"a": "15", "b": "3", "c": "(a+cos(a*t)*2)*b", "d": [], 
+"X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", 
+"t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
+"sawtooth": {"a": "40", "b": "10", "c": "0.8", "d": ["mod(b*t, 1)", "10"], 
+"X": "a*cos(2*pi*t)", "Y": "a*sin(2*pi*t)", "Z": "d2*(lt(d1,c)*d1/c + gte(d1,c)*(1-d1)/(1-c))", 
+"t": "0.0", "t_max": "1.0", "interval": "0.01"}}
+"""
     sel = FreeCADGui.Selection.getSelection()
-    if sel and "Spreadsheet" in str(type(sel[0])):
+    if sel and sel[0].isDerivedFrom("Spreadsheet::Sheet"):
         sheet = sel[0]
+    elif sel and sel[0].isDerivedFrom("App::TextDocument"):
+        textDoc = sel[0]
     if not FreeCAD.ActiveDocument:
         FreeCAD.newDocument()
     pc=FreeCAD.ActiveDocument.addObject("Part::FeaturePython","ParametricCurve")
@@ -1113,8 +1147,13 @@ def makeCurve(Parametric_Curve_FP):
     FreeCADGui.Selection.addSelection(FreeCAD.ActiveDocument.Name,pc.Name)
     if sheet:
         pc.Spreadsheet = sheet
+    elif textDoc:
+        FreeCAD.Console.PrintWarning("Parametric_Curve_FP: Ensure the document has been saved since the last edit of the Text document\n")
+        FreeCAD.Console.PrintMessage(f"Attempting to import:\n{textDoc.Text}\n")
+        pc.Proxy.readJSONFile(pc,textDoc.Text)
     else:
-        FreeCADGui.SendMsgToActiveView("ViewSelection")
+        pc.Proxy.readJSONFile(pc,txt)
+        FreeCADGui.SendMsgToActiveView("ViewSelection",True)
 
 def writeFile():
     with open(py_file,"w") as outfile:
