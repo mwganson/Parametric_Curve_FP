@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.01.rev2"
-#__version__ = "2022.03.01.rev2"
+__version__ = "2022.03.02"
+#__version__ = "2022.03.02"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -196,6 +196,16 @@ __version__ = "2022.03.01.rev2"
 #    "sgn": lambda a: -1 if a < -epsilon else 1 if a > epsilon else 0,
 #    # functionsl with multiple arguments
 #    "multiply": lambda a, b: a * b,
+#    "mod": lambda a, b: a % b,
+#    "interval": lambda a, b, t: 1 * ((t >= a) and (t < b)),
+#    "lt":lambda a, b: 1 * (a < b),
+#    "lte": lambda a, b: 1 * (a <= b),
+#    "gt": lambda a, b: 1 * (a > b),
+#    "gte": lambda a, b: 1 * (a >= b),
+#    "isequal": lambda a, b: 1 * (a == b),
+#    "isclose": lambda a, b: 1 * (math.isclose(a, b, abs_tol = 1e-9)),
+#    "isclosetol": lambda a, b, tol: 1 * (math.isclose(a, b, abs_tol = tol)),
+#    "floordiv": lambda a, b: a // b,
 #    "hypot": math.hypot,
 #    # functions with a variable number of arguments
 #    "all": lambda *a: all(a),
