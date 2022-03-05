@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.05"
-#__version__ = "2022.03.05"
+__version__ = "2022.03.05.rev2"
+#__version__ = "2022.03.05.rev2"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -424,7 +424,6 @@ __version__ = "2022.03.05"
 #            fp.Formulas = list(self.JSON_Data.keys())
 #            fp.Formulas = newName
 #
-#
 #    def newFormula(self,fp):
 #
 #        ii = 1
@@ -525,16 +524,16 @@ __version__ = "2022.03.05"
 #                for dd in range(0,len(fp.d)):
 #                    fp.Spreadsheet.set('A'+str(dd+10),'d'+str(dd+1))
 #                    fp.Spreadsheet.setAlias('B'+str(dd+10),'d'+str(dd+1))
-#        fp.Spreadsheet.set('a_cell',fp.a)
-#        fp.Spreadsheet.set('b_cell',fp.b)
-#        fp.Spreadsheet.set('c_cell',fp.c)
+#        fp.Spreadsheet.set('a_cell',self.stripComments(fp.a))
+#        fp.Spreadsheet.set('b_cell',self.stripComments(fp.b))
+#        fp.Spreadsheet.set('c_cell',self.stripComments(fp.c))
 #        for dd in range(0,len(fp.d)):
 #            fp.Spreadsheet.set('A'+str(dd+10),'d'+str(dd+1))
 #            fp.Spreadsheet.setAlias('B'+str(dd+10),'d'+str(dd+1))
-#            fp.Spreadsheet.set('d'+str(dd+1),fp.d[dd])
-#        fp.Spreadsheet.set('X',fp.X)
-#        fp.Spreadsheet.set('Y',fp.Y)
-#        fp.Spreadsheet.set('Z',fp.Z)
+#            fp.Spreadsheet.set('d'+str(dd+1),self.stripComments(fp.d[dd]))
+#        fp.Spreadsheet.set('X',self.stripComments(fp.X))
+#        fp.Spreadsheet.set('Y',self.stripComments(fp.Y))
+#        fp.Spreadsheet.set('Z',self.stripComments(fp.Z))
 #        fp.Spreadsheet.set('t_min',str(fp.t))
 #        fp.Spreadsheet.set('t_max',str(fp.t_max))
 #        fp.Spreadsheet.set('interval',str(fp.Interval))
@@ -670,16 +669,24 @@ __version__ = "2022.03.05"
 #                except:
 #                    pass
 #
+#    def stripComments(self,string):
+#        """returns a string with everything after # removed, including #"""
+#        if not "#" in string:
+#            return string
+#        else:
+#            idx = string.index("#")
+#            return string[:idx]
+#
 #    def makeCurve(self, fp):
 #        self.updateFromSpreadsheet(fp)
 #        vars = {"a":0,"b":0,"c":0,"X":0,"Y":0,"Z":0,"t":0}
 #
-#        fa = fp.a
-#        fb = fp.b
-#        fc = fp.c
-#        fx = fp.X
-#        fy = fp.Y
-#        fz = fp.Z
+#        fa = self.stripComments(fp.a)
+#        fb = self.stripComments(fp.b)
+#        fc = self.stripComments(fp.c)
+#        fx = self.stripComments(fp.X)
+#        fy = self.stripComments(fp.Y)
+#        fz = self.stripComments(fp.Z)
 #        t = fp.t
 #        tf = fp.t_max
 #        intv = fp.Interval
@@ -714,7 +721,7 @@ __version__ = "2022.03.05"
 #                for dd in range(0,len(fp.d)):#fp.d[0] = d1, fp.d[1] = d2, etc
 #                    k = "d"+str(dd+1)# where dd = 0, k = "d1"
 #                    value = k+" ->"+str(fp.d[dd])
-#                    vars[k] = evaluate(fp.d[dd],vars)
+#                    vars[k] = evaluate(self.stripComments(fp.d[dd]),vars)
 #                value="X ->"+str(fx)
 #                fxx=evaluate(fx,vars)
 #                vars["X"]=fxx
