@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.03"
-#__version__ = "2022.03.03"
+__version__ = "2022.03.05"
+#__version__ = "2022.03.05"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -1116,13 +1116,13 @@ def makeCurve(Parametric_Curve_FP):
     textDoc = None
     txt = """
 {"coil": {"a": "6", "b": "1", "c": "20", "d": [], 
-"X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)",
+"X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)", 
 "t": "0.0", "t_max": "6.283185307179586", "interval": "0.02"}, 
 "holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
 "X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
 "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
-"amoeba": {"a": "15", "b": "3", "c": "(a+cos(a*t)*2)*b", "d": [], 
-"X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", 
+"amoeba": {"a": "36.3", "b": "12", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
+"X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
 "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
 "sawtooth": {"a": "40", "b": "10", "c": "0.8", "d": ["mod(b*t, 1)", "10"], 
 "X": "a*cos(2*pi*t)", "Y": "a*sin(2*pi*t)", "Z": "d2*(lt(d1,c)*d1/c + gte(d1,c)*(1-d1)/(1-c))", 
