@@ -136,6 +136,7 @@ Supported math functions:<br/><br/>
     "tan": math.tan<br/>
     "exp": math.exp<br/>
     "atan": math.atan<br/>
+    "atan2": lambda a, b: math.atan2(a,b)<br/>
     "acos": math.acos<br/>
     "acosh": math.acosh<br/>
     "asin": math.asin<br/>
@@ -166,6 +167,19 @@ Supported math functions:<br/><br/>
     "isclose": lambda a, b: 1 * (math.isclose(a, b, abs_tol = 1e-9))<br/>
     "isclosetol": lambda a, b, tol: 1 * (math.isclose(a, b, abs_tol = tol))<br/>
     "floordiv": lambda a, b: a // b<br/>
+    "any": lambda *a: 1 * any(a) (returns 1 if any item in list is not 0, else 0)<br/>
+    "all": lambda *a: 1 * all(a) (returns 1 if all items in list are not 0, else 0)<br/>
+    "sum": lambda *a: sum(a)<br/>
+    "avg": lambda *a: sum(a)/float(len(a))<br/>
+    "mean": lambda *a: sum(a)/float(len(a))<br/>
+    "gmean": lambda *a: statistics.geometric_mean(a)<br/>
+    "hmean": lambda *a: statistics.harmonic_mean(a)<br/>
+    "mode": lambda *a: statistics.mode(a)<br/>
+    "median": lambda *a: statistics.median(a)<br/>
+    "stdev": lambda *a: statistics.stdev(a)<br/>
+    "prod": lambda *a: math.prod(a) (all items in list multiplied by each other)<br/>
+    "perm": lambda a, b: math.perm(a,b) (ways to arrange a items into lists of length b)<br/>
+    
  
  To do basic adding, subtracting, multiplying, dividing, use standard "+-\*/". For exponents instead of 3\*\*7 standard python syntax use 3^7 to do "3 to the power of 7".
 
@@ -181,6 +195,9 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.06.rev2<br/>
+** add some more math functions
+** rename t to t_min in default JSON text
 * 2022.03.06<br/>
 ** F_??? are now evaluated after stripping comments
 ** renamed t property to t_min
