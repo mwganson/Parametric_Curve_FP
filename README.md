@@ -170,8 +170,8 @@ Supported math functions:<br/><br/>
  To do basic adding, subtracting, multiplying, dividing, use standard "+-\*/". For exponents instead of 3\*\*7 standard python syntax use 3^7 to do "3 to the power of 7".
 
 ### Equation3(T Params) Group
-#### t,t_max,interval.
-The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
+#### t_min,t_max,interval (t_min was renamed from t in v0.2022.03.06, but t is still used for the current value of t in the loops)
+The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t_min and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 
 ### Floats Group
 #### F_???
@@ -181,6 +181,11 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.06<br/>
+** F_??? are now evaluated after stripping comments
+** renamed t property to t_min
+** allow for such as "2 * pi" in JSON formulas for t_min, t_max, and interval
+** added 3 more formulas, 2 new braids and "formula1", a variation on the amoeba formula
 * 2022.03.05.rev3<br/>
 ** added F_??? float property aliases for a, b, c, d, X, Y, and Z, so these may be accessed via the expression engine as floating point values where they can be evaluated as such.  (Must be evaluatable as a constant or else 0.0).  These alias properties are: F_a, F_b, F_c, F_d, F_X, F_Y, and F_Z.  F_d is a list of floats, 1-indexed, so F_d[1] = d1, F_d[2] = d2.  F_d[0] is always 0.0 unless d=[] in which case F_d is [] empty list.<br/>
 ** fixed a bug where when changing formulas if expressions were used, then the expression overrided the new value.  So, now when changing formulas all expressions entered for a, b, c, X, Y, Z, t, t_max, interval are cleared.  (But not d.)<br/>
