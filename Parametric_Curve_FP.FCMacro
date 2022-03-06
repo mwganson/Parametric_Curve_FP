@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.06"
-#__version__ = "2022.03.06"
+__version__ = "2022.03.06.rev2"
+#__version__ = "2022.03.06.rev2"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -11,6 +11,7 @@ __version__ = "2022.03.06"
 #import FreeCAD, FreeCADGui
 #from pivy import coin
 #from math import *
+#import statistics
 #import Part
 #import json
 #import os, sys
@@ -207,9 +208,21 @@ __version__ = "2022.03.06"
 #    "isclose": lambda a, b: 1 * (math.isclose(a, b, abs_tol = 1e-9)),
 #    "isclosetol": lambda a, b, tol: 1 * (math.isclose(a, b, abs_tol = tol)),
 #    "floordiv": lambda a, b: a // b,
+#    "atan2": lambda a, b: math.atan2(a, b),
+#    "perm": lambda a, b: math.perm(a, b),
 #    "hypot": math.hypot,
 #    # functions with a variable number of arguments
-#    "all": lambda *a: all(a),
+#    "any": lambda *a: 1 * any(a),
+#    "all": lambda *a: 1 * all(a),
+#    "sum": lambda *a: sum(a),
+#    "avg": lambda *a: sum(a)/float(len(a)),
+#    "mean": lambda *a: sum(a)/float(len(a)),
+#    "gmean": lambda *a: statistics.geometric_mean(a),
+#    "hmean": lambda *a: statistics.harmonic_mean(a),
+#    "mode": lambda *a: statistics.mode(a),
+#    "median": lambda *a: statistics.median(a),
+#    "stdev": lambda *a: statistics.stdev(a),
+#    "prod": lambda *a: math.prod(a),
 #}
 #
 #
@@ -1184,25 +1197,25 @@ def makeCurve(Parametric_Curve_FP):
 {
 "formula1": {"a": "16", "b": "5", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
 "X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
-"t": "0.0", "t_max": "2*pi", "interval": "0.1"},
+"t_min": "0.0", "t_max": "2*pi", "interval": "0.1"},
 "amoeba": {"a": "36.3", "b": "12", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
 "X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
-"t": "0.0", "t_max": "2*pi", "interval": "0.1"},
+"t_min": "0.0", "t_max": "2*pi", "interval": "0.1"},
 "coil": {"a": "6", "b": "1", "c": "20", "d": [], 
 "X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)", 
-"t": "0.0", "t_max": "2*pi", "interval": "0.02"}, 
+"t_min": "0.0", "t_max": "2*pi", "interval": "0.02"}, 
 "holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
 "X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
-"t": "0.0", "t_max": "2*pi", "interval": "0.1"}, 
+"t_min": "0.0", "t_max": "2*pi", "interval": "0.1"}, 
 "sawtooth": {"a": "40", "b": "10", "c": "0.8", "d": ["mod(b*t, 1)", "10"], 
 "X": "a*cos(2*pi*t)", "Y": "a*sin(2*pi*t)", "Z": "d2*(lt(d1,c)*d1/c + gte(d1,c)*(1-d1)/(1-c))", 
-"t": "0.0", "t_max": "1.0", "interval": "0.01"},
+"t_min": "0.0", "t_max": "1.0", "interval": "0.01"},
 "sinbraid_round_3": {"a": "10", "b": "sin(t*10/3) #radial amplitude", "c": "cos(t*5/3)*5 #vertical amplitude", "d": [], 
 "X": "a*sin(t)+b*sin(t)", "Y": "a*cos(t)+b*cos(t)", "Z": "c", 
-"t": "0.0", "t_max": "6*pi", "interval": "0.02"},
+"t_min": "0.0", "t_max": "6*pi", "interval": "0.02"},
 "sinbraid_round_4_3": {"a": "10  #radius", "b": "sin(t*9/4)   # radial amplitude", "c": "cos(t*3/4)*4  # vertical amplitude", "d": [], 
 "X": "a*sin(t)+b*sin(t)", "Y": "a*cos(t)+b*cos(t)", "Z": "c", 
-"t": "0.0", "t_max": "8*pi", "interval": "0.1"}
+"t_min": "0.0", "t_max": "8*pi", "interval": "0.1"}
 }
 """
     sel = FreeCADGui.Selection.getSelection()
