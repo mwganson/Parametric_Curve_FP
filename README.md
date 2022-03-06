@@ -173,6 +173,13 @@ Supported math functions:<br/><br/>
 #### t,t_max,interval.
 The way the macro works is it creates points in a loop, and then at the end of the loop it uses those points to create the BSpline / Polygon.  The t is the looping index.  It starts the loop initialized at t (min_t in the spreadsheet) and at the end of the loop t = t_max (max_t in the spreadsheet).  The interval is the amount by which t is increased each time through the loop.  The lower the interval the more points get produced.  The properties in this group are type Float, whereas the other properties are type String.  The others have to be Strings in order for you to be able to use variables in the formulas.  These string formulas get evaluated by some code using the pyparsing module.  It's slower, but more secure than using eval().
 
+### Floats Group
+#### F_???
+These are readonly, information only, floating point values based on the string properties of the same names.  For example F_a = evaluate(a).  This only works if a can be evaluated as a compile time constant.  Otherwise, F_a = 0.0.  For example, if c = a+b, then F_c = 0.0 because a+b is not a compile time constant.  It's possible a or b could be based on the value of t at some point during the loop, which makes it a runtime variable.  In other words, evaluate() knows nothing of the values of the other variables and c must be able to be evaluated strictly based on the value of the string in c.  c = pi * 5 + cos(30) is fine, F_c = ~2.42, but c = cos(t) is not, then F_c = 0.0.  Currently, there is no way to tell if c was able to be evaluated or if 0.0 is the proper evaluation.<br/>
+<br/>
+F_d is a list of floats pointing to the d string list.  It is 1-indexed to make it simpler (hopefully).  For example, F_d[3] points to d3.  F_d[0] is always 0.0 unless d = [] an empty list, in which case F_d is also [] empty.  If there is anything in d, even if none can be interpreted as compile time constants, then F_d will contain some values.  All that cannot be evaluated as compile time constants get a value of 0.0.  Let's say d = [1, 2*c, 3], then F_d[0] = 0.0, F_d[1] = 1.0, F_d[2] = 0.0, F_d[3] = 3.0.  F_d in the property view would show F_d [0.0, 1.0, 0.0, 3.0]<br/>
+<br/>
+
 ### ChangeLog
 * 2022.03.05.rev3<br/>
 ** added F_??? float property aliases for a, b, c, d, X, Y, and Z, so these may be accessed via the expression engine as floating point values where they can be evaluated as such.  (Must be evaluatable as a constant or else 0.0).  These alias properties are: F_a, F_b, F_c, F_d, F_X, F_Y, and F_Z.  F_d is a list of floats, 1-indexed, so F_d[1] = d1, F_d[2] = d2.  F_d[0] is always 0.0 unless d=[] in which case F_d is [] empty list.<br/>
