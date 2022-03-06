@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.05.rev3"
-#__version__ = "2022.03.05.rev3"
+__version__ = "2022.03.06"
+#__version__ = "2022.03.06"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -285,7 +285,7 @@ __version__ = "2022.03.05.rev3"
 #        obj.addProperty("App::PropertyFloat","F_Z","Floats","Z as a float if it is a constant (readonly)")
 #        for prop in ["F_a","F_b","F_c","F_d","F_X","F_Y","F_Z"]:
 #            obj.setEditorMode(prop,1) #readonly
-#        obj.addProperty("App::PropertyFloat","t","Equation3(T Params)","start value for t").t = 0.0
+#        obj.addProperty("App::PropertyFloat","t_min","Equation3(T Params)","start value for t").t_min = 0.0
 #        obj.addProperty("App::PropertyFloat","t_max","Equation3(T Params)","Max t").t_max = 2*pi
 #        obj.addProperty("App::PropertyFloat","Interval","Equation3(T Params)","Interval").Interval = 0.1
 #        obj.addProperty("App::PropertyBool","Closed","Curve","Whether curve is closed").Closed=False
@@ -332,7 +332,7 @@ __version__ = "2022.03.05.rev3"
 #        fp.setEditorMode('X',mode)
 #        fp.setEditorMode('Y',mode)
 #        fp.setEditorMode('Z',mode)
-#        fp.setEditorMode('t',mode)
+#        fp.setEditorMode('t_min',mode)
 #        fp.setEditorMode('t_max',mode)
 #        fp.setEditorMode('Interval',mode)
 #
@@ -355,6 +355,12 @@ __version__ = "2022.03.05.rev3"
 #            f.close()
 #        else: #txt != None
 #            self.JSON_Data = json.loads(txt)
+#        #now rename any "t" to "t_min"
+#        for k,v in self.JSON_Data.items():
+#            if "t" in v.keys():
+#                self.JSON_Data[k]["t_min"] = self.JSON_Data[k]["t"]
+#                self.JSON_Data[k].pop("t")
+#                FreeCAD.Console.PrintMessage(f"ParametricCurve: renaming 't' to 't_min' in {k}"+chr(10))
 #        formula_names = []
 #        for pn in self.JSON_Data:
 #            formula_names.append(pn)
@@ -420,7 +426,7 @@ __version__ = "2022.03.05.rev3"
 #                "X":fp.X,
 #                "Y":fp.Y,
 #                "Z":fp.Z,
-#                "t":str(fp.t),
+#                "t_min":str(fp.t) if hasattr(fp,"t") else str(fp.t_min),
 #                "t_max":str(fp.t_max),
 #                "interval":str(fp.Interval)
 #                }}
@@ -450,7 +456,7 @@ __version__ = "2022.03.05.rev3"
 #                "X":fp.X,
 #                "Y":fp.Y,
 #                "Z":fp.Z,
-#                "t":str(fp.t),
+#                "t_min":str(fp.t) if hasattr(fp,"t") else str(fp.t_min),
 #                "t_max":str(fp.t_max),
 #                "interval":str(fp.Interval)
 #                }
@@ -475,6 +481,8 @@ __version__ = "2022.03.05.rev3"
 #            self.JSON_Data[formulaName]["Z"] = fp.Z
 #        if hasattr(fp,"t"):
 #            self.JSON_Data[formulaName]["t"] = str(fp.t)
+#        if hasattr(fp,"t_min"):
+#            self.JSON_Data[formulaName]["t_min"] = str(fp.t_min)
 #        if hasattr(fp,"t_max"):
 #            self.JSON_Data[formulaName]["t_max"] = str(fp.t_max)
 #        if hasattr(fp,"Interval"):
@@ -485,7 +493,7 @@ __version__ = "2022.03.05.rev3"
 #        #when changing formulas if expressions are used the expressions override the new
 #        #values from the formula, so we try to set them all to None
 #        if bool(fp.ExpressionEngine):
-#            propstrs = ["a","b","c","X","Y","Z","t","t_max","interval"]
+#            propstrs = ["a","b","c","X","Y","Z","t","t_min","t_max","interval"]
 #            for propstr in propstrs:
 #                try:
 #                    fp.setExpression(propstr,None)
@@ -499,9 +507,12 @@ __version__ = "2022.03.05.rev3"
 #        fp.X = self.JSON_Data[formulaName]["X"]
 #        fp.Y = self.JSON_Data[formulaName]["Y"]
 #        fp.Z = self.JSON_Data[formulaName]["Z"]
-#        fp.t = float(self.JSON_Data[formulaName]["t"])
-#        fp.t_max = float(self.JSON_Data[formulaName]["t_max"])
-#        fp.Interval = float(self.JSON_Data[formulaName]["interval"])
+#        if hasattr(fp,"t"):
+#            fp.t = evaluate(self.JSON_Data[formulaName]["t_min"])
+#        else:
+#            fp.t_min = evaluate(self.JSON_Data[formulaName]["t_min"])
+#        fp.t_max = evaluate(self.JSON_Data[formulaName]["t_max"])
+#        fp.Interval = evaluate(self.JSON_Data[formulaName]["interval"])
 #
 #
 #    def updateToSpreadsheet(self,fp):
@@ -554,7 +565,10 @@ __version__ = "2022.03.05.rev3"
 #        fp.Spreadsheet.set('X',self.stripComments(fp.X))
 #        fp.Spreadsheet.set('Y',self.stripComments(fp.Y))
 #        fp.Spreadsheet.set('Z',self.stripComments(fp.Z))
-#        fp.Spreadsheet.set('t_min',str(fp.t))
+#        if hasattr(fp,"t"):
+#            fp.Spreadsheet.set('t_min',str(fp.t))
+#        else:
+#            fp.Spreadsheet.set('t_min',str(fp.t_min))
 #        fp.Spreadsheet.set('t_max',str(fp.t_max))
 #        fp.Spreadsheet.set('interval',str(fp.Interval))
 #
@@ -584,7 +598,10 @@ __version__ = "2022.03.05.rev3"
 #        fp.X=str(fp.Spreadsheet.X)
 #        fp.Y=str(fp.Spreadsheet.Y)
 #        fp.Z=str(fp.Spreadsheet.Z)
-#        fp.t=fp.Spreadsheet.t_min 
+#        if hasattr(fp,"t"):
+#            fp.t = fp.Spreadsheet.t_min
+#        else:
+#            fp.t_min = fp.Spreadsheet.t_min
 #        fp.t_max=fp.Spreadsheet.t_max
 #        fp.Interval=fp.Spreadsheet.interval
 #
@@ -677,7 +694,7 @@ __version__ = "2022.03.05.rev3"
 #            fp.DeleteFormula = False
 #            self.deleteFormula(fp)
 #            doc.commitTransaction()
-#        elif prop == "a" or prop == "b" or prop == "c" or prop == "d" or prop == "X" or prop == "Y" or prop == "Z" or prop == "t" or prop == "t_max" or prop == "Interval":
+#        elif prop == "a" or prop == "b" or prop == "c" or prop == "d" or prop == "X" or prop == "Y" or prop == "Z" or prop == "t" or prop == "t_min" or prop == "t_max" or prop == "Interval":
 #            if fp.FormulaName and not self.bInihibitUpdates:
 #                self.updateJSON_Data(fp,fp.Formulas) #update self.JSON_Data on every property change
 #        elif prop == "MakeFace" and fp.MakeFace == True:
@@ -707,7 +724,7 @@ __version__ = "2022.03.05.rev3"
 #        fx = self.stripComments(fp.X)
 #        fy = self.stripComments(fp.Y)
 #        fz = self.stripComments(fp.Z)
-#        t = fp.t
+#        t = fp.t if hasattr(fp,"t") else fp.t_min
 #        tf = fp.t_max
 #        intv = fp.Interval
 #        if (tf-t)*intv <= 0:
@@ -795,19 +812,21 @@ __version__ = "2022.03.05.rev3"
 #
 #    def updateFloat(self, fp, propstr, propfloat):
 #        try:
-#            fval = evaluate(getattr(fp,propstr))
+#            fval = evaluate(self.stripComments(getattr(fp,propstr)))
 #            setattr(fp,propfloat,fval)
 #        except Exception:
 #            setattr(fp,propfloat,0.0)
 #
 #    def updateFloats(self, fp):
+#        if not hasattr(fp, "F_a"): #do not break existing objects created with earlier versions
+#            return
 #        propstrs = ["a","b","c","X","Y","Z"]
 #        for propstr in propstrs:
 #            self.updateFloat(fp,propstr,f"F_{propstr}")
 #        d_vals = [0.0] #dummy first value so we can 1-index into the array
 #        for dd,val in enumerate(fp.d):
 #            try:
-#                d_vals.append(evaluate(val))
+#                d_vals.append(evaluate(self.stripComments(val)))
 #            except:
 #                d_vals.append(0.0)
 #        d_vals = d_vals if not d_vals == [0.0] else []
@@ -1162,18 +1181,29 @@ def makeCurve(Parametric_Curve_FP):
     sheet = None
     textDoc = None
     txt = """
-{"coil": {"a": "6", "b": "1", "c": "20", "d": [], 
-"X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)", 
-"t": "0.0", "t_max": "6.283185307179586", "interval": "0.02"}, 
-"holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
-"X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
-"t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
+{
+"formula1": {"a": "16", "b": "5", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
+"X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
+"t": "0.0", "t_max": "2*pi", "interval": "0.1"},
 "amoeba": {"a": "36.3", "b": "12", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
 "X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
-"t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
+"t": "0.0", "t_max": "2*pi", "interval": "0.1"},
+"coil": {"a": "6", "b": "1", "c": "20", "d": [], 
+"X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)", 
+"t": "0.0", "t_max": "2*pi", "interval": "0.02"}, 
+"holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
+"X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
+"t": "0.0", "t_max": "2*pi", "interval": "0.1"}, 
 "sawtooth": {"a": "40", "b": "10", "c": "0.8", "d": ["mod(b*t, 1)", "10"], 
 "X": "a*cos(2*pi*t)", "Y": "a*sin(2*pi*t)", "Z": "d2*(lt(d1,c)*d1/c + gte(d1,c)*(1-d1)/(1-c))", 
-"t": "0.0", "t_max": "1.0", "interval": "0.01"}}
+"t": "0.0", "t_max": "1.0", "interval": "0.01"},
+"sinbraid_round_3": {"a": "10", "b": "sin(t*10/3) #radial amplitude", "c": "cos(t*5/3)*5 #vertical amplitude", "d": [], 
+"X": "a*sin(t)+b*sin(t)", "Y": "a*cos(t)+b*cos(t)", "Z": "c", 
+"t": "0.0", "t_max": "6*pi", "interval": "0.02"},
+"sinbraid_round_4_3": {"a": "10  #radius", "b": "sin(t*9/4)   # radial amplitude", "c": "cos(t*3/4)*4  # vertical amplitude", "d": [], 
+"X": "a*sin(t)+b*sin(t)", "Y": "a*cos(t)+b*cos(t)", "Z": "c", 
+"t": "0.0", "t_max": "8*pi", "interval": "0.1"}
+}
 """
     sel = FreeCADGui.Selection.getSelection()
     if sel and sel[0].isDerivedFrom("Spreadsheet::Sheet"):
