@@ -36,16 +36,27 @@ You can save the fp object's state (the Equation Group and JSON group properties
 
 Sample JSON file:
 <pre>
-{"formula3": {"a": "3", "b": "1", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
-"formula7": {"a": "7", "b": "1", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
-"formula19": {"a": "19", "b": "1", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
-"formula24": {"a": "24", "b": "1", "c": "(a+cos(a*t)*2)*b", "X": "cos(t)*c", "Y": "sin(t)*c", "Z": "0", "t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}}
+{"coil": {"a": "6", "b": "1", "c": "20", "d": [], 
+"X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)", 
+"t": "0.0", "t_max": "6.283185307179586", "interval": "0.02"},
+
+"holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
+"X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
+"t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
+
+"amoeba": {"a": "36.3", "b": "12 #number of elements", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
+"X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
+"t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
+
+"sawtooth": {"a": "40", "b": "10", "c": "0.8", "d": ["mod(b*t, 1)", "10"], 
+"X": "a*cos(2*pi*t)", "Y": "a*sin(2*pi*t)", 
+"Z": "d2*(lt(d1,c)*d1/c + gte(d1,c)*(1-d1)/(1-c))", 
+"t": "0.0", "t_max": "1.0", "interval": "0.01"}}
 </pre>
 
 You can manually edit the JSON files in a text editor, but there are a few things to keep in mind.
 * Make sure to follow the formatting properly or else the fp object will not be able to read the file
 * Values for min_t, max_t, and interval must evaluate directly to float.  For example, "3.14159" works, but "pi" does not.
-* Values with decimal points must not lead with the decimal, but rather should have a leading 0.  Example: "0.5" instead of ".5"
 * All values must be strings (in quotes)
 
 ## Properties
@@ -97,6 +108,7 @@ A JSON file may have more than one formula stored in it.  Each formula is given 
 Append formulas to the linked JSON file.  If there is already a formula with the same name in the file, then it is skipped and a warning shown in the report view.  You will need to rename any formulas with conflicting names.
 
 ### Equation1 and Equation2 Groups
+String variables: a, b, c, d1-dN, X, Y, and Z may contain python style comments.  These begin with a pound symbol (#).  The # and the rest of the line are ignored by the evaluation mechanism.  For example, a value for a could be 12 #radius.  In such a case only the 12 is evaluated, not the # or anything following it.
 #### a,b,c,d,X,Y,Z
 These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Basically, anything in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.<br/>
 <br/>
@@ -104,9 +116,9 @@ a -> only refer to t<br/>
 b -> only refer to a and t<br/>
 c -> only refer to a, b, and t<br/>
 d -> d1 only refer to a, b, c, and t, d2 only refer to a, b, c, d1, and t, d3 only refer to a, b, c, d1, d2, and t...<br/>
-X -> only refer to a, b, c, and t<br/>
-Y -> only refer to a, b, c, X, and t<br/>
-Z -> only refer to a, b, c, X, Y, and t<br/>
+X -> only refer to a, b, c, d1-dN, and t<br/>
+Y -> only refer to a, b, c, d1-dN, X, and t<br/>
+Z -> only refer to a, b, c, d1-dN, X, Y, and t<br/>
 <br/>
 #### d variables
 The d variables are all held in a single property ("d").  This is a string list, so d is really a list of variables d1, d2, d3, d4, d5, etc., however many you want
