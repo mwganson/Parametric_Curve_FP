@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.05.rev2"
-#__version__ = "2022.03.05.rev2"
+__version__ = "2022.03.05.rev3"
+#__version__ = "2022.03.05.rev3"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -268,13 +268,23 @@ __version__ = "2022.03.05.rev2"
 #class Curve:
 #    def __init__(self, obj):
 #        obj.addExtension("Part::AttachExtensionPython")
-#        obj.addProperty("App::PropertyString","a","Equation1(a,b,c)","a(t)").a = "37"
-#        obj.addProperty("App::PropertyString","b","Equation1(a,b,c)","b(a,t)").b = "1"
-#        obj.addProperty("App::PropertyString","c","Equation1(a,b,c)","c(a,b,t)").c = "(a+cos(a*t)*2)*b"
+#        obj.addProperty("App::PropertyString","a","Equation1(a,b,c)","a(t)").a="6"
+#        obj.addProperty("App::PropertyString","b","Equation1(a,b,c)","b(a,t)").b="1"
+#        obj.addProperty("App::PropertyString","c","Equation1(a,b,c)","c(a,b,t)").c="20"
 #        obj.addProperty("App::PropertyStringList","d","Equation1(a,b,c)","d1(a,b,c,t)"+chr(10)+"d2(a,b,c,t,d1)"+chr(10)+"d3(a,b,c,t,d1,d2)"+chr(10)+"d4(a,b,c,t,d1,d2,d3)"+chr(10)+"..."+chr(10))
-#        obj.addProperty("App::PropertyString","X","Equation2(X,Y,Z)","X(a,b,c,t)").X = "cos(t)*c"
-#        obj.addProperty("App::PropertyString","Y","Equation2(X,Y,Z)","Y(a,b,c,t)").Y = "sin(t)*c"
-#        obj.addProperty("App::PropertyString","Z","Equation2(X,Y,Z)","Z(a,b,c,t)").Z = "0"
+#        obj.addProperty("App::PropertyString","X","Equation2(X,Y,Z)","X(a,b,c,d1-dN,t)").X="(a+b*cos(c*t))*cos(t)"
+#        obj.addProperty("App::PropertyString","Y","Equation2(X,Y,Z)","Y(a,b,c,d1-dN,X,t)").Y="(a+b*cos(c*t))*sin(t)"
+#        obj.addProperty("App::PropertyString","Z","Equation2(X,Y,Z)","Z(a,b,c,d1-dN,X,Y,t)").Z="b*sin(c*t)"
+#        obj.addProperty("App::PropertyFloat","F_a","Floats","a as a float if it is a constant (readonly)")
+#        obj.addProperty("App::PropertyFloat","F_b","Floats","b as a float if it is a constant (readonly)")
+#        obj.addProperty("App::PropertyFloat","F_c","Floats","c as a float if it is a constant (readonly)")
+#        obj.addProperty("App::PropertyFloatList","F_d","Floats","di as a float if it is a constant (readonly)\n\
+#1-indexed, e.g. F_d[1] = d1, F_d[2] = d2, etc.")
+#        obj.addProperty("App::PropertyFloat","F_X","Floats","X as a float if it is a constant (readonly)")
+#        obj.addProperty("App::PropertyFloat","F_Y","Floats","Y as a float if it is a constant (readonly)")
+#        obj.addProperty("App::PropertyFloat","F_Z","Floats","Z as a float if it is a constant (readonly)")
+#        for prop in ["F_a","F_b","F_c","F_d","F_X","F_Y","F_Z"]:
+#            obj.setEditorMode(prop,1) #readonly
 #        obj.addProperty("App::PropertyFloat","t","Equation3(T Params)","start value for t").t = 0.0
 #        obj.addProperty("App::PropertyFloat","t_max","Equation3(T Params)","Max t").t_max = 2*pi
 #        obj.addProperty("App::PropertyFloat","Interval","Equation3(T Params)","Interval").Interval = 0.1
@@ -472,6 +482,16 @@ __version__ = "2022.03.05.rev2"
 #
 #    def updateJSONFormula(self,fp,formulaName):
 #        #FreeCAD.Console.PrintMessage("updateJSONFormula"+chr(10))
+#        #when changing formulas if expressions are used the expressions override the new
+#        #values from the formula, so we try to set them all to None
+#        if bool(fp.ExpressionEngine):
+#            propstrs = ["a","b","c","X","Y","Z","t","t_max","interval"]
+#            for propstr in propstrs:
+#                try:
+#                    fp.setExpression(propstr,None)
+#                except Exception:
+#                    pass
+#            FreeCAD.Console.PrintWarning("ParameticCurve: clearing expressions\n")
 #        fp.a = self.JSON_Data[formulaName]["a"]
 #        fp.b = self.JSON_Data[formulaName]["b"]
 #        fp.c = self.JSON_Data[formulaName]["c"]
@@ -753,7 +773,6 @@ __version__ = "2022.03.05.rev2"
 #            comp = Part.Compound(vertices)
 #            return comp
 #
-#
 #    def execute(self, fp):
 #        '''Do something when doing a recomputation, this method is mandatory'''
 #        if self.bInhibitRecompute: #some things do not require a recompute, such as saving to JSON file or updating spreadsheet
@@ -772,6 +791,27 @@ __version__ = "2022.03.05.rev2"
 #            except:
 #                pass
 #        #FreeCAD.Console.PrintMessage("Recompute Python Curve feature"+chr(10))
+#        self.updateFloats(fp)
+#
+#    def updateFloat(self, fp, propstr, propfloat):
+#        try:
+#            fval = evaluate(getattr(fp,propstr))
+#            setattr(fp,propfloat,fval)
+#        except Exception:
+#            setattr(fp,propfloat,0.0)
+#
+#    def updateFloats(self, fp):
+#        propstrs = ["a","b","c","X","Y","Z"]
+#        for propstr in propstrs:
+#            self.updateFloat(fp,propstr,f"F_{propstr}")
+#        d_vals = [0.0] #dummy first value so we can 1-index into the array
+#        for dd,val in enumerate(fp.d):
+#            try:
+#                d_vals.append(evaluate(val))
+#            except:
+#                d_vals.append(0.0)
+#        d_vals = d_vals if not d_vals == [0.0] else []
+#        setattr(fp, "F_d",d_vals)
 #
 #class CurveVP:
 #    '''Creates a 3D parametric curve'''
