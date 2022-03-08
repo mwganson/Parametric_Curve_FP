@@ -38,25 +38,25 @@ Sample JSON file:
 <pre>
 {"coil": {"a": "6", "b": "1", "c": "20", "d": [], 
 "X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)", 
-"t": "0.0", "t_max": "6.283185307179586", "interval": "0.02"},
+"t_min": "0.0", "t_max": "6.283185307179586", "interval": "0.02"},
 
 "holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
 "X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
-"t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
+"t_min": "0.0", "t_max": "6.283185307179586", "interval": "0.1"},
 
 "amoeba": {"a": "36.3", "b": "12 #number of elements", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
 "X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
-"t": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
+"t_min": "0.0", "t_max": "6.283185307179586", "interval": "0.1"}, 
 
 "sawtooth": {"a": "40", "b": "10", "c": "0.8", "d": ["mod(b*t, 1)", "10"], 
 "X": "a*cos(2*pi*t)", "Y": "a*sin(2*pi*t)", 
 "Z": "d2*(lt(d1,c)*d1/c + gte(d1,c)*(1-d1)/(1-c))", 
-"t": "0.0", "t_max": "1.0", "interval": "0.01"}}
+"t_min": "0.0", "t_max": "1.0", "interval": "0.01"}}
 </pre>
 
 You can manually edit the JSON files in a text editor, but there are a few things to keep in mind.
 * Make sure to follow the formatting properly or else the fp object will not be able to read the file
-* Values for min_t, max_t, and interval must evaluate directly to float.  For example, "3.14159" works, but "pi" does not.
+* Values for t_min, t_max, and interval must evaluate directly to float.  For example, "3.14159" works, but "pi" does not.
 * All values must be strings (in quotes)
 
 ## Properties
@@ -86,18 +86,38 @@ This is a link property, linking the fp object to a spreadsheet.  By default, it
 When this is True, the formula properties (a,b,c,d,X,Y,Z,t,t_max, and interval) are all set to readonly.  You won't be able to modify the properties in the fp object's property view when this is True.  Instead, you must modify the appropriate cells in the spreadsheet.  The fp object automatically updates its properties from the spreadsheet when they change.  Set this to False if you would prefer to modify the properties in the fp object rather than in the spreadsheet.  But if you set it to True again your property changes will be overwritten with the values from the spreadsheet.  Use the Update Spreadsheet property/command trigger to push the data to the spreadsheet first if you don't want the property values to be clobbered.
 ### JSON Group
 You can link a text file to the feature python object.  In such a text file you can save/load formulas in JSON format.  Note: merely linking the file does nothing but set the file name in the File property.  You must then trigger the Read File property to read in the contents (which will overwrite existing formulas).  If you want to save your current formula to the file first, then use the Append File command to append the current formula to the JSON file before reading it in.
+#### Edit Formulas (boolean toggle)
+As of version 0.2022.03.08 there is a new formula editor, replacing some functions previously provided using boolean trigger properties.  To access the editor, toggle the Edit Formulas property to True, select from the context menu in the tree, or double click the ParametricCurve object in the tree.<br/>
+##### Dialog Buttons
+The formula editor dialog buttons are fairly self-explanatory, but I will give a brief introduction here anyway.  Paste, -, and Clear should be used with caution as these might not be able to be undone in some situations without also undoing some things you might not want undone.
+###### +
+The + button creates a new formula, initially a copy of the currently selected formula, and adds it to the bottom of the list.  It gets a default new name of "formula1", "formula2", etc., searching until a new unused name is available.  It can be later renamed using the Rename button.
+###### -
+The - button deletes the currently selected formula.  It cannot be undone except by using Reset, which sets the dialog back to its initial state when it was first opened, or Cancel, which does the same thing and also closes the dialog.
+###### Copy
+Copy button copies the currently selected formula to the clipboard as a text object that can be later pasted into another formula.
+###### Paste
+Paste button copies the text from the clipboard (previously inserted using Copy) into the currently selected formula, overwriting any existing values.  Cannot be undone.
+###### Rename
+Rename button is used to rename the currently selected formula.
+###### Clear
+Clear button clears the currently selected formula.  Cannot be undone except with Reset, which resets the entire set of formulas to what it was when the dialog was initially opened.  Cancel will also undo, and close the dialog.
+###### OK
+close the dialog, apply changes.  Can be undone.
+###### Apply
+Apply changes, leave the dialog open.  Can be undone.
+###### Reset
+Resets the dialog back to its initial state when it was first opened.
+###### Cancel
+Closes the dialog, ignoring all changes.  (Changes that have been applied are not undone, but they can be undone using Undo.)
 #### Formula Name
-This is the name of the current formula.  It is a string property that you can modify.  But modifying it alone does not change the name of the currently selected formula.  You must trigger the Rename Formula property (see below).
-#### Rename Formula
-[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to change the name of the current formula (as currently selected in the Formulas property) to the string currently in the Formula Name property field.  By default, when a new formula is created (or when a new JSON file is initiated) the default name given to it is "formula" or sometimes "formula1", "formula2", etc.  If you want to change the name to something more meaningful, such as "Spiral", enter "Spiral" into the Formula Name property and trigger the Rename Formula property from False to True.  Note: You must connect a JSON file to the feature python object using the File property, discussed below, before you can use all of the features in the JSON group.
+The property is now hidden.  Use the formula editor instead.
+
 #### File
 This is the JSON file connected to the fp object.  It is essentially a text string containing the path to the linked file.  By default, it is empty.  You can click the "[...]" button to open the file open dialog to select a file or create a new one by entering the name into the File property field.  Make sure you have write access to the folder you choose.  In Linux something like ~/Documents/myjsonfile.txt would work.  In Windows, maybe use c:\users\YOURUSERNAME\Documents\myjsonfile.txt.  When you connect the file it is not automatically read in.  You must toggle Read File property to read in the data.  This is to allow you to append current data to the file before reading it in.
 
 A JSON file may have more than one formula stored in it.  Each formula is given a name, e.g. formula, formula2, etc.  Or you can assign your own custom name if you prefer.  All of the formulas get populated into the Presets property when you read the file, which presents as a drop down list from which you can select the desired formula.
-#### New Formula
-[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to create a new formula and add it to the Presets property.  It is given a default name, such as "formula", "formula2", "formula3", etc., whichever one is first available.  You can change this name to a more meaningful one as described above im the Rename Preset documentation.  All of the Trigger properties are boolean properties that are normally False.  You trigger them by setting them to True.  They reset themselves to False after running the command.
-#### Delete Formula
-[Trigger] Deletes the currently selected preset.  It does not modify the linked JSON file.  You must trigger Write File or Append File to make changes to the file (or edit it manually outside FreeCAD -- see Open File below).
+
 #### Open File
 [Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to open the JSON file in your default editor.  If you give it a .txt extension this is more likely to be successful.  It has been tested on Windows and Ubuntu, but not as yet on Mac.  The JSON file can be edited as you would any text file.  Just take care to follow the formatting if adding new formulas in this manner.  Once you have edited and saved your changes you can have the fp object reload the file by triggering the Read File property.
 #### Read File
@@ -195,6 +215,9 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.08<br/>
+** add formula editor
+** remove some formula editing properties
 * 2022.03.06.rev2<br/>
 ** add some more math functions
 ** rename t to t_min in default JSON text
