@@ -192,6 +192,7 @@ Supported math functions:<br/><br/>
     "stdev": lambda *a: statistics.stdev(a)<br/>
     "prod": lambda *a: math.prod(a) (all items in list multiplied by each other)<br/>
     "perm": lambda a, b: math.perm(a,b) (ways to arrange a items into lists of length b)<br/>
+    "ternary": lambda a, b, c: b if a else c (if a is non-zero, returns b, else c)<br/>
     
  
  To do basic adding, subtracting, multiplying, dividing, use standard "+-\*/". For exponents instead of 3\*\*7 standard python syntax use 3^7 to do "3 to the power of 7".
