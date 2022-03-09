@@ -208,6 +208,11 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.09.rev2
+** add ternary(a,b,c) function<br/>
+ reads "if a, then b, else c"
+** add hammax's param_curve formula
+** add ellipse formula
 * 2022.03.09
 ** Add JSON file buttons to editor, remove related properties
 ** New buttons: Open, Save, Append
