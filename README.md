@@ -102,6 +102,12 @@ Paste button copies the text from the clipboard (previously inserted using Copy)
 Rename button is used to rename the currently selected formula.
 ###### Clear
 Clear button clears the currently selected formula.  Cannot be undone except with Reset, which resets the entire set of formulas to what it was when the dialog was initially opened.  Cancel will also undo, and close the dialog.
+###### Open
+Open button opens and reads a JSON text file of the appropriate format.  It only loads the data into memory in the editor, does not change the ParametricCurve object until the user presses OK or Apply.  Current content in editor memory is all overwritten.
+###### Save
+Save button saves the current contents of the memory in the editor to a file in JSON format.  It overwrites anything in the selected file.  Use Append to append contents to an existing file if you want to retain its contents.
+###### Append
+Append button appends the current selected formula (NOT ALL FORMULAS!) to the selected file.  You must append each formula separately at this time.  If the file currently contains a formula with the same name as the currently selected formula, then you will be prompted to enter a new name.
 ###### OK
 close the dialog, apply changes.  Can be undone.
 ###### Apply
@@ -112,21 +118,8 @@ Resets the dialog back to its initial state when it was first opened.
 Closes the dialog, ignoring all changes.  (Changes that have been applied are not undone, but they can be undone using Undo.)
 #### Formula Name
 The property is now hidden.  Use the formula editor instead.
-
-#### File
-This is the JSON file connected to the fp object.  It is essentially a text string containing the path to the linked file.  By default, it is empty.  You can click the "[...]" button to open the file open dialog to select a file or create a new one by entering the name into the File property field.  Make sure you have write access to the folder you choose.  In Linux something like ~/Documents/myjsonfile.txt would work.  In Windows, maybe use c:\users\YOURUSERNAME\Documents\myjsonfile.txt.  When you connect the file it is not automatically read in.  You must toggle Read File property to read in the data.  This is to allow you to append current data to the file before reading it in.
-
-A JSON file may have more than one formula stored in it.  Each formula is given a name, e.g. formula, formula2, etc.  Or you can assign your own custom name if you prefer.  All of the formulas get populated into the Presets property when you read the file, which presents as a drop down list from which you can select the desired formula.
-
-#### Open File
-[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to open the JSON file in your default editor.  If you give it a .txt extension this is more likely to be successful.  It has been tested on Windows and Ubuntu, but not as yet on Mac.  The JSON file can be edited as you would any text file.  Just take care to follow the formatting if adding new formulas in this manner.  Once you have edited and saved your changes you can have the fp object reload the file by triggering the Read File property.
-#### Read File
-[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to read or reload the JSON file from disk in the event changes have been made to the file outside of the fp object or in the case where you simply want to reset the fp object to the contents of the file.
-#### Write File
-[Trigger]  This property serves as a trigger to trigger a command.  The command triggered is to save the current formulas to the JSON file.  Everything in the JSON file will be overwritten.  Use Append File if you just want to add to the file the current formula.  You must trigger this command in order to save any changes to the JSON file unless you made the changes outside the fp object, such as using Notepad in Windows.  
-#### Append File
-Append formulas to the linked JSON file.  If there is already a formula with the same name in the file, then it is skipped and a warning shown in the report view.  You will need to rename any formulas with conflicting names.
-
+#### Write File, Append File, Read File, File
+These properties are now gone as of v0.2022.03.09, except for File, which is hidden.  Use the Formula editor dialog to open, save, and append JSON files.
 ### Equation1 and Equation2 Groups
 String variables: a, b, c, d1-dN, X, Y, and Z may contain python style comments.  These begin with a pound symbol (#).  The # and the rest of the line are ignored by the evaluation mechanism.  For example, a value for a could be 12 #radius.  In such a case only the 12 is evaluated, not the # or anything following it.
 #### a,b,c,d,X,Y,Z
@@ -215,6 +208,11 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.09
+** Add JSON file buttons to editor, remove related properties
+** New buttons: Open, Save, Append
+** File property retained, but hidden
+** Allow comments in JSON files for t_min, interval, and t_max fields
 * 2022.03.08<br/>
 ** add formula editor
 ** remove some formula editing properties
