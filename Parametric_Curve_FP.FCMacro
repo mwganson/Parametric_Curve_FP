@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.09"
-#__version__ = "2022.03.09"
+__version__ = "2022.03.09.rev2"
+#__version__ = "2022.03.09.rev2"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -211,6 +211,7 @@ __version__ = "2022.03.09"
 #    "atan2": lambda a, b: math.atan2(a, b),
 #    "perm": lambda a, b: math.perm(a, b),
 #    "hypot": math.hypot,
+#    "ternary": lambda a, b, c: b if a else c,
 #    # functions with a variable number of arguments
 #    "any": lambda *a: 1 * any(a),
 #    "all": lambda *a: 1 * all(a),
@@ -1622,8 +1623,12 @@ def makeCurve(Parametric_Curve_FP):
     textDoc = None
     txt = """
 {
-"formula1": {"a": "16", "b": "5", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
-"X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
+"ellipse": {"a": "20 #radius on x-axis", "b": "20 #radius on y-axis (ignored if c != 0)", 
+"c": ".5 #eccentricity (0 to ignore and use a and b, else b = c * a)", 
+"d": ["0 #x center", "0 #y center", "ternary(c, c * a, b)", 
+"#ternary(x,y,z) = if x, then y else z", 
+"#in python: y if x else z", ""], 
+"X": "d1 + a * cos(t)", "Y": "d2 + d3 * sin(t)", "Z": "0", 
 "t_min": "0.0", "t_max": "2*pi", "interval": "0.1"},
 "amoeba": {"a": "36.3", "b": "12", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
 "X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
@@ -1642,7 +1647,10 @@ def makeCurve(Parametric_Curve_FP):
 "t_min": "0.0", "t_max": "6*pi", "interval": "0.02"},
 "sinbraid_round_4_3": {"a": "10  #radius", "b": "sin(t*9/4)   # radial amplitude", "c": "cos(t*3/4)*4  # vertical amplitude", "d": [], 
 "X": "a*sin(t)+b*sin(t)", "Y": "a*cos(t)+b*cos(t)", "Z": "c", 
-"t_min": "0.0", "t_max": "8*pi", "interval": "0.1"}
+"t_min": "0.0", "t_max": "8*pi", "interval": "0.1"},
+"para_curve": {"a": "10 #radius plane", "b": "4 #period", "c": "3 #amplitude", "d": ["(a+c*sin(b*t+pi/2)) #formula"], 
+"X": "cos(t)*d1 #polar X", "Y": "sin(t)*d1  #polarY", "Z": "0", 
+"t_min": "0.0", "t_max": "2*pi", "interval": "0.1"}
 }
 """
     sel = FreeCADGui.Selection.getSelection()
