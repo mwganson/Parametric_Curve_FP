@@ -66,6 +66,8 @@ The Feature Python object (ParametricCurve) has a number of properties separated
 ### Curve Group
 #### Closed (Default: False)
 The property sets the curve to either closed or not closed.  If it's set to True the wire will close itself (connect the first vertex to the last vertex).  This is sometimes  required if you are to use the curve to create a solid with a Pad, Extrude, etc.  THis was set to True by default, but since 0.2022.02.13 it is now False by default.  This is because OCC can sometimes fail if this is True and the first and last points are coincident already.
+#### Dependencies (LinkList)
+You can add a document object to this property to create a dependency between that object and the ParametricCurve object.  The ParametricCurve object will recompute when the Dependencies objects recompute.  The purpose of this is for use with the fc(expr) evaluation function described below in the Functions section.
 #### Shape Type (Default: BSpline)
 Choose your shape type here.  Options are: BSpline, Polygon, Points.
 #### PlusOneIteration (Default: True)
@@ -155,6 +157,7 @@ d3 -> a, b, c, t, d1, d2<br/>
 d4 -> a, b, c, t, d1, d2, d3<br/>
 d5 -> a, b, c, t, d1, d2, d3, d4<br/>
 ...<br/>
+### Functions
 Supported math functions:<br/><br/>
     "sin": math.sin<br/>
     "cos": math.cos<br/>
@@ -205,9 +208,11 @@ Supported math functions:<br/><br/>
     "prod": lambda *a: math.prod(a) (all items in list multiplied by each other)<br/>
     "perm": lambda a, b: math.perm(a,b) (ways to arrange a items into lists of length b)<br/>
     "ternary": lambda a, b, c: b if a else c (if a is non-zero, returns b, else c)<br/>
+    "fc(expr)": evaluated as FreeCAD.DocumentObject.evalExpression(expr)<br/>
     
+The function fc(expr) was added with version 0.2022.03.10.rev3.  The argument expr can be any expression you would enter into the FreeCAD expression engine.  For example, if there is a cylinder object in the document and you want to set "a" variable to its height, you could use fc(Cylinder.Height) in the "a" field.  But this does not create a dependency because FreeCAD treats the "a" property as a string property and fc(Cylinder.Height) is just another string value.  Thus, when the Cylinder's Height changes, the ParametricCurve object will not automatically update.  You must manually update the ParametricCurve object.  Alternatively, you can create this dependency by adding the Cylinder to the Dependencies property.<br/>
  
- To do basic adding, subtracting, multiplying, dividing, use standard "+-\*/". For exponents instead of 3\*\*7 standard python syntax use 3^7 to do "3 to the power of 7".
+To do basic adding, subtracting, multiplying, dividing, use standard "+-\*/". For exponents instead of 3\*\*7 standard python syntax use 3^7 to do "3 to the power of 7".
 
 ### Equation3(T Params) Group
 #### t_min,t_max,interval (t_min was renamed from t in v0.2022.03.06, but t is still used for the current value of t in the loops)
