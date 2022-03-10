@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.10"
-#__version__ = "2022.03.10"
+__version__ = "2022.03.10.rev2"
+#__version__ = "2022.03.10.rev2"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -515,6 +515,8 @@ __version__ = "2022.03.10"
 #        #FreeCAD.Console.PrintMessage("updateJSONFormula"+chr(10))
 #        #when changing formulas if expressions are used the expressions override the new
 #        #values from the formula, so we try to set them all to None
+#        if not hasattr(fp,"a"):
+#            return
 #        if bool(fp.ExpressionEngine):
 #            propstrs = ["a","b","c","X","Y","Z","t","t_min","t_max","interval"]
 #            for propstr in propstrs:
@@ -757,6 +759,7 @@ __version__ = "2022.03.10"
 #        tf = fp.t_max
 #        intv = fp.Interval
 #        if not intv:
+#            FreeCAD.Console.PrintWarning("ParametricCurve: interval must be non-zero, return null shape.\n")
 #            return Part.Shape()
 #        if (tf-t)*intv <= 0:
 #            FreeCAD.Console.PrintWarning(f"Infinite loop avoided.  t_max - t * Interval cannot be less than 0.  Interval used will be {intv * -1}\n")
@@ -807,6 +810,7 @@ __version__ = "2022.03.10"
 #            matriz.append(FreeCAD.Vector(fxx,fyy,fzz))
 #            t+=intv
 #        if not matriz:
+#            FreeCAD.Console.PrintWarning("ParametricCurve: --vector list is empty, returning null shape\n")
 #            return Part.Shape()
 #        if fp.ShapeType == "Polygon" and fp.Closed == True:
 #            matriz.append(matriz[0])
@@ -867,6 +871,9 @@ __version__ = "2022.03.10"
 #
 #    def showEditor(self):
 #        '''show the formula editor'''
+#        if not hasattr(self,"fpName"):
+#            FreeCAD.Console.PrintError("Formula editor not available for objects created with older versions.\n")
+#            return #object made with old version
 #        fp = FreeCAD.ActiveDocument.getObject(self.fpName)
 #        if not FreeCADGui.Control.activeDialog():
 #            editor = TaskEditFormulasPanel(fp)
@@ -1041,7 +1048,7 @@ __version__ = "2022.03.10"
 #        self.t_max_Line = QtGui.QLineEdit()
 #        formulaBox.addWidget(self.t_max_Line,9+dsize,1)
 #
-#        self.form.setWindowTitle('Edit Formulas')
+#        self.form.setWindowTitle(f"Formula editor v{__version__}")
 #        self.fp.Proxy.editingMode = True
 #        self.populateLines(self.formulaList.itemAt(0,0).text())
 #        self.blockSignals = False
@@ -1379,8 +1386,8 @@ __version__ = "2022.03.10"
 #            self.populateLines(next(iter(self.json))) #first key
 #        elif button == QtGui.QDialogButtonBox.Apply:
 #            self.fp.Document.openTransaction("ParametricCurve::Apply")
-#            if hasattr(fp,"Sorted"):
-#                fp.Sorted = self.sorted
+#            if hasattr(self.fp,"Sorted"):
+#                self.fp.Sorted = self.sorted
 #            FreeCAD.Console.PrintMessage("Applying... Can be undone\n")
 #            self.saveLinesToJson(self.formulaList.currentItem().text())
 #            jsonstr = str(self.json).replace('"','"""').replace("'",'"')
@@ -1775,7 +1782,7 @@ def makeCurve(Parametric_Curve_FP):
 {
 "ellipse": {"a": "20 #radius on x-axis", "b": "20 #radius on y-axis (ignored if c != 0)", 
 "c": ".5 #eccentricity (0 to ignore and use a and b, else b = c * a)", 
-"d": ["0 #x center", "0 #y center", "ternary(c, c * a, b)", 
+"d": ["0 #x center", "0 #y center", "ternary(c, a*(1-c*c)^0.5, b)", 
 "#ternary(x,y,z) = if x, then y else z", 
 "#in python: y if x else z", ""], 
 "X": "d1 + a * cos(t)", "Y": "d2 + d3 * sin(t)", "Z": "0", 
