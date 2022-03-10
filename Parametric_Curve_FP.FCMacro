@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.10.rev3"
-#__version__ = "2022.03.10.rev3"
+__version__ = "2022.03.10.rev4"
+#__version__ = "2022.03.10.rev4"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -1398,7 +1398,7 @@ __version__ = "2022.03.10.rev3"
 #            FreeCAD.Console.PrintError("No document.\n")
 #            return
 #        if button == QtGui.QDialogButtonBox.Reset:
-#            self.sorted = fp.Sorted if hasattr(fp,"Sorted") else False
+#            self.sorted = self.fp.Sorted if hasattr(self.fp,"Sorted") else False
 #            self.json =self.shallowCopy(self.fp.Proxy.JSON_Data)
 #            self.updateFormulaList()
 #            self.formulaList.setCurrentRow(0)
