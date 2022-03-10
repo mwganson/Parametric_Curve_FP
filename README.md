@@ -221,6 +221,11 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.10.rev2
+** bug fixes
+** added warning messages when unable to create shape from formula
+** check for compatibility with formula editor for objects created with older versions
+** add version information to formula editor panel title, change name from Edit formulas to Formula editor
 * 2022.03.10
 ** New buttons in dialog.
 ** Sorted option.
