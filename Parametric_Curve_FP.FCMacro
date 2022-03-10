@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.10.rev2"
-#__version__ = "2022.03.10.rev2"
+__version__ = "2022.03.10.rev3"
+#__version__ = "2022.03.10.rev3"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -266,6 +266,8 @@ __version__ = "2022.03.10.rev2"
 #def evaluate(s, vars={}):
 #    if s == "": #return 0 in case the user has left the field blank --Mark
 #        return 0
+#    s= checkForFCEval(s)
+#
 #
 #    exprStack[:] = []
 #    try:
@@ -278,12 +280,29 @@ __version__ = "2022.03.10.rev2"
 #    else:
 #        return val
 #
+## implement FreeCAD.DocumentObject.evalExpression(str)
+## usage: fc(freecad_expression_string)
+#
+#def checkForFCEval(s):
+#    if "fc(" in s:
+#        idx = s.index("fc(")
+#        idx2 = s.index(")",idx)+1
+#        fc_Total = s[idx:idx2] #example fc(dd.ddFloat)
+#        fc_Eval = fc_Total[3:-1] # example dd.ddFloat
+#        evaluated = FreeCAD.ActiveDocument.ActiveObject.evalExpression(fc_Eval)
+#        s = s.replace(fc_Total,str(evaluated))
+#        return checkForFCEval(s) #in case there are multiple fc(expr) calls in the same string
+#    else:
+#        return s
+#
 ## <end imported code from FourFn.py>
 #
 #
 #class Curve:
 #    def __init__(self, obj):
 #        obj.addExtension("Part::AttachExtensionPython")
+#        obj.addProperty("App::PropertyLinkList","Dependencies","Curve",
+#"If using fc(expr) to link to another object, add the object to these links to force parametric recomputes when that object changes")
 #        obj.addProperty("App::PropertyString","a","Equation1(a,b,c)","a(t)").a="6"
 #        obj.addProperty("App::PropertyString","b","Equation1(a,b,c)","b(a,t)").b="1"
 #        obj.addProperty("App::PropertyString","c","Equation1(a,b,c)","c(a,b,t)").c="20"
