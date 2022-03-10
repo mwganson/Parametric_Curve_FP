@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.09.rev2"
-#__version__ = "2022.03.09.rev2"
+__version__ = "2022.03.10"
+#__version__ = "2022.03.10"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -58,7 +58,7 @@ __version__ = "2022.03.09.rev2"
 #sys.path = newsyspath
 #import pyparsing
 #import importlib
-#FreeCAD.Console.PrintLog(f"{importlib.reload(pyparsing)}\n")
+#importlib.reload(pyparsing)
 ##-------------
 ##from pyparsing import (
 ##    pyparsing.Literal,
@@ -318,6 +318,7 @@ __version__ = "2022.03.09.rev2"
 #        obj.addProperty("App::PropertyBool","MakeFace","Curve","Make a face from curve object if possible.  Can't be done with points or if shape isn't closed.")
 #        obj.addProperty("App::PropertyFile","File","JSON","JSON format file to contain data")
 #        obj.setEditorMode("File",2)#hidden
+#        obj.addProperty("App::PropertyBool","Sorted","JSON", "Sort formula names")
 #        obj.addProperty("App::PropertyEnumeration","Formulas","JSON","Formulas in JSON data").Formulas=["formula"]
 #        obj.addProperty("App::PropertyBool","EditFormulas","JSON","[Trigger] brings up editor dialog")
 ##        obj.addProperty("App::PropertyBool","WriteFile","JSON","[Trigger] Updates JSON file with current data.  WARNING: will overwrite all current data, use AppendFile to add current formula to file.").WriteFile = False
@@ -385,7 +386,7 @@ __version__ = "2022.03.09.rev2"
 #        formula_names = []
 #        for pn in self.JSON_Data:
 #            formula_names.append(pn)
-#        fp.Formulas = formula_names
+#        fp.Formulas = sorted(formula_names) if hasattr(fp,"Sorted") and fp.Sorted else formula_names
 #        #Formulas, when the left hand operand, accepts a list
 #        #but when the right hand operand, it gives a string, the current formula
 #        self.bInihibitUpdates=True
@@ -700,7 +701,9 @@ __version__ = "2022.03.09.rev2"
 #                    subprocess.Popen(["open", fp.File])
 #                else:
 #                    FreeCAD.Console.PrintError("We were unable to determine your platform, and thus cannot open your file for you."+chr(10))
-#
+#        elif prop == "Sorted":
+#            formulas = [key for key in self.JSON_Data.keys()]
+#            fp.Formulas = sorted(formulas) if fp.Sorted else formulas
 #        elif prop == "ReadFile" and fp.ReadFile == True:
 #            fp.ReadFile = False
 #            doc.openTransaction("Read file")
@@ -753,6 +756,8 @@ __version__ = "2022.03.09.rev2"
 #        t = fp.t if hasattr(fp,"t") else fp.t_min
 #        tf = fp.t_max
 #        intv = fp.Interval
+#        if not intv:
+#            return Part.Shape()
 #        if (tf-t)*intv <= 0:
 #            FreeCAD.Console.PrintWarning(f"Infinite loop avoided.  t_max - t * Interval cannot be less than 0.  Interval used will be {intv * -1}\n")
 #            intv *= -1
@@ -801,6 +806,8 @@ __version__ = "2022.03.09.rev2"
 #
 #            matriz.append(FreeCAD.Vector(fxx,fyy,fzz))
 #            t+=intv
+#        if not matriz:
+#            return Part.Shape()
 #        if fp.ShapeType == "Polygon" and fp.Closed == True:
 #            matriz.append(matriz[0])
 #        fp.Points = matriz
@@ -862,8 +869,8 @@ __version__ = "2022.03.09.rev2"
 #        '''show the formula editor'''
 #        fp = FreeCAD.ActiveDocument.getObject(self.fpName)
 #        if not FreeCADGui.Control.activeDialog():
-#            panel = TaskEditFormulasPanel(fp)
-#            FreeCADGui.Control.showDialog(panel)
+#            editor = TaskEditFormulasPanel(fp)
+#            FreeCADGui.Control.showDialog(editor)
 #            self.editingMode = True 
 #        else:
 #            self.editingMode=False
@@ -875,11 +882,16 @@ __version__ = "2022.03.09.rev2"
 #    def __init__(self, fp):
 #        self.blockSignals = True
 #        self.fp = fp
+#        self.sorted = fp.Sorted if hasattr(fp,"Sorted") else False
 #        self.json = self.shallowCopy(self.fp.Proxy.JSON_Data)
 #        self.clipboard = QtGui.QApplication.clipboard()
 #        self.form = QtGui.QWidget()
+#        self.form.setObjectName("formulaEditor")
+#        self.form.editor = self #used by context menu handler
 #        layout=QtGui.QVBoxLayout()
+#        layout.setObjectName("layout")
 #        commandBox = QtGui.QHBoxLayout()
+#        commandBox.setObjectName("commandBox")
 #        self.formulaList = QtGui.QListWidget()
 #        commandBox.addWidget(self.formulaList)
 #        self.updateFormulaList()
@@ -891,22 +903,33 @@ __version__ = "2022.03.09.rev2"
 #        #hBoxBottom is similar to commandBox, hbox containing various line edits and 
 #        #bottomButtonBox, a vbox containing buttons related commands for the line edits
 #
-#        formulasLabel = QtGui.QLabel("Formulas in memory:")
+#        formulasLabel = QtGui.QLabel("Formulas in editor memory:")
 #        layout.addWidget(formulasLabel)
+#
 #        layout.addLayout(commandBox)
 #        hBoxBottom = QtGui.QHBoxLayout()
+#        hBoxBottom.setObjectName("hBoxBottom")
 #        formulaBox = QtGui.QGridLayout()
+#        formulaBox.setObjectName("formulaBox")
 #        hBoxBottom.addLayout(formulaBox)
 #        bottomButtonBox = QtGui.QVBoxLayout()
+#        bottomButtonBox.setObjectName("bottomButtonBox")
 #        hBoxBottom.addLayout(bottomButtonBox)
 #        divider = QtGui.QLabel("Current formula:")
 #        layout.addWidget(divider)
 #        layout.addLayout (hBoxBottom)
 #        topButtonBox = QtGui.QVBoxLayout()
+#        topButtonBox.setObjectName("topButtonBox")
 #        commandBox.addLayout(topButtonBox)
-#        layout.addLayout(hBoxBottom)
 #
 #        self.form.setLayout(layout)
+#
+#        self.checkBoxSorted = QtGui.QCheckBox("Sorted")
+#        self.checkBoxSorted.setLayoutDirection(QtCore.Qt.LeftToRight)
+#        self.checkBoxSorted.setToolTip ("Sort formulas")
+#        self.checkBoxSorted.clicked.connect(self.checkBoxSortedClicked)
+#        self.checkBoxSorted.setChecked(self.sorted)
+#        topButtonBox.addWidget(self.checkBoxSorted)
 #
 #        buttonPlus = QtGui.QPushButton("+")
 #        buttonPlus.setToolTip ("Add new formula, a copy of selected formula")
@@ -917,6 +940,12 @@ __version__ = "2022.03.09.rev2"
 #        buttonMinus.setToolTip("Delete formula")
 #        topButtonBox.addWidget(buttonMinus)
 #        buttonMinus.clicked.connect(self.buttonMinusClicked)
+#
+#        buttonImport = QtGui.QPushButton("Import")
+#        buttonImport.setToolTip ("Import one or all formulas from a JSON file\n\
+#Does not overwrite existing memory contents\n")
+#        bottomButtonBox.addWidget(buttonImport)
+#        buttonImport.clicked.connect(self.buttonImportClicked)
 #
 #        buttonCopy = QtGui.QPushButton("Copy")
 #        buttonCopy.setToolTip ("Copy formula to clipboard")
@@ -938,20 +967,36 @@ __version__ = "2022.03.09.rev2"
 #        bottomButtonBox.addWidget(buttonClear)
 #        buttonClear.clicked.connect(self.buttonClearClicked)
 #
+#        buttonClearAll = QtGui.QPushButton("Clear All")
+#        buttonClearAll.setToolTip ("Clear all formulas")
+#        topButtonBox.addWidget(buttonClearAll)
+#        buttonClearAll.clicked.connect(self.buttonClearAllClicked)
+#
 #        buttonOpen = QtGui.QPushButton("Open")
 #        buttonOpen.setToolTip ("Open JSON file")
 #        topButtonBox.addWidget(buttonOpen)
 #        buttonOpen.clicked.connect(self.buttonOpenClicked)
 #
-#        buttonSave = QtGui.QPushButton("Save")
+#        buttonSave = QtGui.QPushButton("Save All")
 #        buttonSave.setToolTip ("Save JSON file")
 #        topButtonBox.addWidget(buttonSave)
 #        buttonSave.clicked.connect(self.buttonSaveClicked)
 #
-#        buttonAppend = QtGui.QPushButton("Append")
+#        buttonSaveOne = QtGui.QPushButton("Save One")
+#        buttonSaveOne.setToolTip ("Save current formula to a JSON file\n\
+#Overwrites any existing content in the file\n")
+#        bottomButtonBox.addWidget(buttonSaveOne)
+#        buttonSaveOne.clicked.connect(self.buttonSaveOneClicked)
+#
+#        buttonAppend = QtGui.QPushButton("Append One")
 #        buttonAppend.setToolTip ("Append current formula to a JSON file")
-#        topButtonBox.addWidget(buttonAppend)
+#        bottomButtonBox.addWidget(buttonAppend)
 #        buttonAppend.clicked.connect(self.buttonAppendClicked)
+#
+#        buttonAppendAll = QtGui.QPushButton("Append All")
+#        buttonAppendAll.setToolTip ("Append all formulas to a JSON file")
+#        topButtonBox.addWidget(buttonAppendAll)
+#        buttonAppendAll.clicked.connect(self.buttonAppendAllClicked)
 #
 #        bottomButtonBox.addStretch()
 #
@@ -1014,10 +1059,11 @@ __version__ = "2022.03.09.rev2"
 #    def updateFormulaList(self):
 #        self.blockSignals = True
 #        self.formulaList.clear()
-#        for key in self.json.keys():
+#        keys = self.json.keys() if not self.sorted else sorted(self.json.keys())
+#        for key in keys:
 #            self.formulaList.addItem(key)
-#        self.formulaList.setCurrentItem(self.formulaList.itemAt(0,0))
 #        self.blockSignals = False
+#        self.formulaList.setCurrentItem(self.formulaList.itemAt(0,0))
 #
 #    def formulaListCurrentItemChanged(self,current,prev):
 #        if self.blockSignals:
@@ -1026,6 +1072,65 @@ __version__ = "2022.03.09.rev2"
 #            self.saveLinesToJson(prev.text())
 #        if current:
 #            self.populateLines(current.text())
+#
+#    def importFormula(self, fromDict, formulaName):
+#        '''adds fromDict[formulaName] to self.json'''
+#        if not formulaName in self.json:
+#            self.json[formulaName] = fromDict[formulaName]
+#        else: #name conflict
+#            newName = formulaName
+#            while newName in self.json:
+#                newName,ok = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(), "Formula exists","Formula exists already, enter a new name:",text=formulaName)
+#                if not ok:
+#                    return False
+#            self.json[newName] = fromDict[formulaName]
+#        return True
+#
+#    def buttonImportClicked(self,btn):
+#        fname = QtGui.QFileDialog.getOpenFileName(FreeCADGui.getMainWindow(),"Open a JSON file",filter='*.*')[0]
+#        if not fname:
+#            return
+#        try:
+#            f = open(fname)
+#        except Exception as ex:
+#            FreeCAD.Console.PrintError(f"ParametricCurve::Exception {ex}\n")
+#            return
+#        try:
+#            jtemp = json.load(f)
+#        except Exception as ex:
+#            FreeCAD.Console.PrintError(f"ParametricCurve::Exception {ex}\nFile not opened.\n")
+#            f.close()
+#            return
+#        f.close()
+#    #now rename any "t" to "t_min"
+#        for k,v in jtemp.items():
+#            if "t" in v.keys():
+#                jtemp[k]["t_min"] = jtemp[k]["t"]
+#                jtemp[k].pop("t")
+#                FreeCAD.Console.PrintMessage(f"ParametricCurve: renaming 't' to 't_min' in {k}"+chr(10))
+#        items = [k for k in jtemp.keys()]
+#        items = items if len(items) <= 1 else ["Import all"] + items
+#        if not items:
+#            return #nothing to import
+#        if len(items) == 1:
+#            self.importFormula(jtemp, items[0])
+#        else:
+#            item,ok = QtGui.QInputDialog.getItem(FreeCADGui.getMainWindow(), "Import Formulas","Select a formula or Import all:", items, 0, False)
+#            if not ok:
+#                return #canceled
+#            if item == items[0]: #import all
+#                for key in jtemp.keys():
+#                    success = self.importFormula(jtemp,key)
+#                    if not success:
+#                        break
+#            else: #just import selected item
+#                self.importFormula(jtemp, item)
+#        self.updateFormulaList()
+#
+#    def checkBoxSortedClicked(self,btn):
+#        self.sorted = not self.sorted
+#        self.checkBoxSorted.setChecked(self.sorted)
+#        self.updateFormulaList()
 #
 #    def buttonOpenClicked(self,btn):
 #        fname = QtGui.QFileDialog.getOpenFileName(FreeCADGui.getMainWindow(),"Open a JSON file",filter='*.*')[0]
@@ -1051,50 +1156,87 @@ __version__ = "2022.03.09.rev2"
 #                FreeCAD.Console.PrintMessage(f"ParametricCurve: renaming 't' to 't_min' in {k}"+chr(10))
 #        self.updateFormulaList()
 #
-#    def buttonAppendClicked(self,btn):
+#    def setupAppend(self,all=False):
 #        fname = QtGui.QFileDialog.getOpenFileName(FreeCADGui.getMainWindow(),"Append to a JSON file",filter='*.*')[0]
 #        if not fname:
 #            return
 #        try:
 #            f = open(fname)
 #        except Exception as ex:
-#            FreeCAD.Console.PrintError(f"ParametricCurve::Exception {ex}\n")
+#            FreeCAD.Console.PrintError(f"ParametricCurve::Exception opening file: {ex}\n")
 #            return
 #        try:
-#            jtemp = json.load(f)
+#            contents = f.read()
+#            jtemp = json.loads(contents) if contents else dict()
 #        except Exception as ex:
 #            FreeCAD.Console.PrintError(f"ParametricCurve::Exception {ex}\nFile not opened.\n")
 #            f.close()
 #            return
 #        f.close()
-#        current = self.formulaList.currentItem().text()
+#        if not all:
+#            current = self.formulaList.currentItem().text()
+#            self.appendFormula(fname, current, jtemp)
+#        else:
+#            for ii in range(self.formulaList.count()):
+#                item = self.formulaList.item(ii)
+#                success = self.appendFormula(fname,item.text(),jtemp)
+#                if not success:
+#                    break #user canceled
+#
+#    def appendFormula(self, fname, formulaName, jtemp):
+#        current = formulaName
 #        item = self.json[current]
 #        newName = current
 #        while newName in jtemp:
 #            newName,ok = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(), "Formula exists","Formula exists already, enter a new name:",text=current)
 #            if not ok:
-#                return
+#                return False
 #        jtemp[newName] = item
 #        FreeCAD.Console.PrintMessage(f"Appending {newName} to {fname}\n")
 #        with open(fname,"w") as outfile:
 #            json.dump(jtemp,outfile)
+#        return True
+#
+#    def buttonAppendClicked(self,btn):
+#        self.setupAppend()
+#
+#    def buttonAppendAllClicked(self,btn):
+#        self.setupAppend(all=True)
 #
 #    def buttonSaveClicked(self,btn):
-#        fname = QtGui.QFileDialog.getSaveFileName(FreeCADGui.getMainWindow(),"Save a JSON file",filter='*.*')[0]
+#        fname = QtGui.QFileDialog.getSaveFileName(FreeCADGui.getMainWindow(),"Save all formulas to a JSON file",filter='*.*')[0]
 #        if not fname:
 #            return
 #        with open(fname,"w") as outfile:
 #            json.dump(self.json,outfile)
 #
-#    def buttonClearClicked(self,btn):
+#    def buttonSaveOneClicked(self,btn):
 #        current = self.formulaList.currentItem().text()
+#        fname = QtGui.QFileDialog.getSaveFileName(FreeCADGui.getMainWindow(),"Save a formula to JSON file",dir=current)[0]
+#        if not fname:
+#            return
+#        jtemp = self.shallowCopy(self.json)
+#        pops = [key for key in jtemp.keys() if not key == current]
+#        for pop in pops:
+#            jtemp.pop(pop)
+#        with open(fname,"w") as outfile:
+#            json.dump(jtemp,outfile)
+#
+#    def buttonClearAllClicked(self,btn):
+#        self.json = dict()
+#        self.updateFormulaList()
+#        self.buttonClearClicked(True)
+#        self.buttonPlusClicked(True)
+#
+#    def buttonClearClicked(self,btn):
+#        current = self.formulaList.currentItem().text() if self.formulaList.currentItem() else ""
 #        lines = [self.a_Line, self.b_Line, self.c_Line, 
 #                 self.X_Line, self.Y_Line, self.Z_Line, self.t_min_Line, 
 #                 self.interval_Line, self.t_max_Line]
 #        for line in lines:
 #            line.setText("")
 #        self.d_Lines.setPlainText("")
-#        self.saveLinesToJson(current)
+#        self.saveLinesToJson(current) if current else None
 #
 #    def buttonPlusClicked(self, btn):
 #        ii = 1
@@ -1137,6 +1279,9 @@ __version__ = "2022.03.09.rev2"
 #        self.blockSignals = True
 #        self.json.pop(self.formulaList.currentItem().text(),None)
 #        self.updateFormulaList()
+#        if len(self.json.keys()) == 0:
+#            self.buttonClearClicked(True)
+#            self.buttonPlusClicked(True)
 #        self.formulaList.setCurrentRow(0)
 #        self.populateLines(self.formulaList.item(0).text())
 #        self.blockSignals = False
@@ -1190,22 +1335,24 @@ __version__ = "2022.03.09.rev2"
 #        self.t_max_Line.setText(cur["t_max"])
 #
 #    def reject(self):
-#        FreeCADGui.Control.closeDialog()
 #        if not FreeCAD.ActiveDocument:
+#            FreeCADGui.Control.closeDialog()
 #            return
 #        self.fp.Proxy.editingMode = False
+#        FreeCADGui.Control.closeDialog()
 #        FreeCADGui.activeDocument().resetEdit()
 #        FreeCAD.ActiveDocument.recompute()
 #
 #    def accept(self):
-#        FreeCADGui.Control.closeDialog()
 #        if not FreeCAD.ActiveDocument:
+#            FreeCADGui.Control.closeDialog()
 #            return
 #        self.fp.Document.openTransaction("ParametricCurve::Accept")
+#        if hasattr(self.fp,"Sorted"):
+#            self.fp.Sorted = self.sorted
 #        self.saveLinesToJson(self.formulaList.currentItem().text())
 #        jsonstr = str(self.json).replace('"','"""').replace("'",'"')
 #        self.fp.Proxy.readJSONFile(self.fp,jsonstr)
-#        FreeCADGui.ActiveDocument.resetEdit()
 #        if not self.fp: #user deleted or closed document perhaps
 #            self.fp.Document.abortTransaction()
 #            return
@@ -1213,6 +1360,8 @@ __version__ = "2022.03.09.rev2"
 #        if hasattr(self.fp.Proxy,"editingMode"):
 #            self.fp.Proxy.editingMode = False
 #        self.fp.Document.commitTransaction()
+#        FreeCADGui.Control.closeDialog()
+#        FreeCADGui.ActiveDocument.resetEdit()
 #        FreeCAD.ActiveDocument.recompute()
 #
 #    def getStandardButtons(self):
@@ -1223,12 +1372,15 @@ __version__ = "2022.03.09.rev2"
 #            FreeCAD.Console.PrintError("No document.\n")
 #            return
 #        if button == QtGui.QDialogButtonBox.Reset:
+#            self.sorted = fp.Sorted if hasattr(fp,"Sorted") else False
 #            self.json =self.shallowCopy(self.fp.Proxy.JSON_Data)
 #            self.updateFormulaList()
 #            self.formulaList.setCurrentRow(0)
 #            self.populateLines(next(iter(self.json))) #first key
 #        elif button == QtGui.QDialogButtonBox.Apply:
 #            self.fp.Document.openTransaction("ParametricCurve::Apply")
+#            if hasattr(fp,"Sorted"):
+#                fp.Sorted = self.sorted
 #            FreeCAD.Console.PrintMessage("Applying... Can be undone\n")
 #            self.saveLinesToJson(self.formulaList.currentItem().text())
 #            jsonstr = str(self.json).replace('"','"""').replace("'",'"')
@@ -1292,31 +1444,29 @@ __version__ = "2022.03.09.rev2"
 #
 #    def setupContextMenu(self, vobj, menu):
 #        if vobj.Object.Proxy.editingMode == False:
-#            text = "Edit Formulas"
+#            text = "Edit Formulas..."
 #            mode = 0
 #        else:
 #            text = "Accept Formulas"
 #            mode = 6
 #        action = menu.addAction(text)
 #        action.triggered.connect(lambda: self.setEdit(vobj,mode))
-#        action2 = menu.addAction("Edit Attachment")
-#        mode = 2
-#        action2.triggered.connect(lambda: self.setEdit(vobj,mode))
+#        attachAction = menu.addAction("Edit Attachment...")
+#        attachAction.triggered.connect(lambda: self.setEdit(vobj,8))
 #
 #    def setEdit(self,vp,modNum):
+#        FreeCAD.Console.PrintLog(f"ParametricCurve::setEdit: modNum = {modNum}\n")
 #        if modNum == 0:
 #            vp.Object.Proxy.showEditor()
 #        elif modNum == 1:
 #            FreeCADGui.runCommand("Std_TransformManip",0)
 #            return True
-#        elif modNum == 2:
-#            FreeCADGui.runCommand("Part_EditAttachment",0)
-#            return True
 #        elif modNum == 3:
 #            FreeCADGui.runCommand('Part_ColorPerFace',0)
 #        elif modNum == 6: #accept changes and end edit mode
-#            vp.Object.Proxy.editingMode = False
-#            FreeCADGui.Control.closeDialog()
+#            FreeCADGui.getMainWindow().findChild(QtGui.QWidget,"formulaEditor").editor.accept()
+#        elif modNum == 8:
+#            FreeCADGui.runCommand("Part_EditAttachment",0)
 #        else:
 #            FreeCAD.Console.PrintMessage(f"modNum = {modNum}\n")
 #        return False
