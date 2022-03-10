@@ -89,25 +89,35 @@ You can link a text file to the feature python object.  In such a text file you 
 #### Edit Formulas (boolean toggle)
 As of version 0.2022.03.08 there is a new formula editor, replacing some functions previously provided using boolean trigger properties.  To access the editor, toggle the Edit Formulas property to True, select from the context menu in the tree, or double click the ParametricCurve object in the tree.<br/>
 ##### Dialog Buttons
-The formula editor dialog buttons are fairly self-explanatory, but I will give a brief introduction here anyway.  Paste, -, and Clear should be used with caution as these might not be able to be undone in some situations without also undoing some things you might not want undone.
+The formula editor dialog buttons are fairly self-explanatory, but I will give a brief introduction here anyway. Generally, the buttons along the right side at the top are for the formula names, and the buttons along the right side at the bottom are for the currently selected formula.
+###### Sorted (checkbox)
+Sort the formulas alphabetically in the formula list if checked.
 ###### +
 The + button creates a new formula, initially a copy of the currently selected formula, and adds it to the bottom of the list.  It gets a default new name of "formula1", "formula2", etc., searching until a new unused name is available.  It can be later renamed using the Rename button.
 ###### -
 The - button deletes the currently selected formula.  It cannot be undone except by using Reset, which sets the dialog back to its initial state when it was first opened, or Cancel, which does the same thing and also closes the dialog.
+###### Rename
+Rename button is used to rename the currently selected formula.
+###### Clear All
+Clears all formulas from the editor.  Use with caution.  To undo, press Reset or Cancel, but in such cases you might lose some work because these options return you to the state when the dialog was first opened.
+###### Open
+Open button opens and reads a JSON text file of the appropriate format.  It only loads the data into memory in the editor, does not change the ParametricCurve object until the user presses OK or Apply.  Current content in editor memory is all overwritten.
+###### Save All
+Save all formulas to a JSON file.  This overwrites the contents of the file, if any.
+###### Append All
+Append all formulas to a JSON file.  Does not overwrite the contents of the file.  You will be prompted for new formula names if there are conflicts with existing formulas in the file.
+###### Import
+Import one or all formulas from a JSON file. Select Import all to import them all or any individual formula to only import that one.  If the file only contains one formula you will not be prompted to select which formula to import.  You will be prompted to select a new name for any imports that conflict with existing formula names in the editor.  If you press Cancel when prompted for a new name the import will be aborted, but anything already imported will remain.
 ###### Copy
 Copy button copies the currently selected formula to the clipboard as a text object that can be later pasted into another formula.
 ###### Paste
 Paste button copies the text from the clipboard (previously inserted using Copy) into the currently selected formula, overwriting any existing values.  Cannot be undone.
-###### Rename
-Rename button is used to rename the currently selected formula.
 ###### Clear
 Clear button clears the currently selected formula.  Cannot be undone except with Reset, which resets the entire set of formulas to what it was when the dialog was initially opened.  Cancel will also undo, and close the dialog.
-###### Open
-Open button opens and reads a JSON text file of the appropriate format.  It only loads the data into memory in the editor, does not change the ParametricCurve object until the user presses OK or Apply.  Current content in editor memory is all overwritten.
-###### Save
-Save button saves the current contents of the memory in the editor to a file in JSON format.  It overwrites anything in the selected file.  Use Append to append contents to an existing file if you want to retain its contents.
-###### Append
-Append button appends the current selected formula (NOT ALL FORMULAS!) to the selected file.  You must append each formula separately at this time.  If the file currently contains a formula with the same name as the currently selected formula, then you will be prompted to enter a new name.
+###### Save One
+Save the currently selected formula to a JSON file.  All contents of the file, if any, will be overwritten.
+###### Append One
+Appends the current selected formula to the selected file. Use Append All if you want to append all the formulas to a JSON file.  If the file currently contains a formula with the same name as the currently selected formula, then you will be prompted to enter a new name.
 ###### OK
 close the dialog, apply changes.  Can be undone.
 ###### Apply
@@ -118,6 +128,8 @@ Resets the dialog back to its initial state when it was first opened.
 Closes the dialog, ignoring all changes.  (Changes that have been applied are not undone, but they can be undone using Undo.)
 #### Formula Name
 The property is now hidden.  Use the formula editor instead.
+#### Sorted (boolean)
+Default is False.  Sorts formulas alphabetically in the Formulas enumeration.  When the editor is opened it takes its sorted checkbox setting from this property and also updates it when the editor is closed with OK or Apply.
 #### Write File, Append File, Read File, File
 These properties are now gone as of v0.2022.03.09, except for File, which is hidden.  Use the Formula editor dialog to open, save, and append JSON files.
 ### Equation1 and Equation2 Groups
@@ -209,6 +221,12 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.10
+** New buttons in dialog.
+** Sorted option.
+** Fix context menu
+** Require 1 formula in editor
+** Return null shape from makeCurve() if a shape cannot be made
 * 2022.03.09.rev2
 ** add ternary(a,b,c) function<br/>
  reads "if a, then b, else c"
