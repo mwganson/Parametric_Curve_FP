@@ -226,6 +226,8 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.10.rev3
+** add fc(expr) function
 * 2022.03.10.rev2
 ** bug fixes
 ** added warning messages when unable to create shape from formula
