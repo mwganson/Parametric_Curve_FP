@@ -226,6 +226,10 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.10.rev4
+** fix fc(expr) so it can handle unit property types
+* 2022.03.10.rev4
+** fix bug in reset button handler in dialog
 * 2022.03.10.rev3
 ** add fc(expr) function
 * 2022.03.10.rev2
