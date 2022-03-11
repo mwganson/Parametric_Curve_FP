@@ -226,6 +226,10 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.10.rev6
+** after deleting formula select next item in list instead of first item.
+* 2022.03.10.rev5
+** fix bug
 * 2022.03.10.rev4
 ** fix fc(expr) so it can handle unit property types
 * 2022.03.10.rev4
