@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.10.rev4"
-#__version__ = "2022.03.10.rev4"
+__version__ = "2022.03.10.rev5"
+#__version__ = "2022.03.10.rev5"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -289,7 +289,7 @@ __version__ = "2022.03.10.rev4"
 #        idx2 = s.index(")",idx)+1
 #        fc_Total = s[idx:idx2] #example fc(dd.ddFloat)
 #        fc_Eval = fc_Total[3:-1] # example dd.ddFloat
-#        evaluated = FreeCAD.ActiveDocument.ActiveObject.evalExpression(fc_Eval)
+#        evaluated = FreeCAD.ActiveDocument.ActiveObject.evalExpression(fc_Eval).Value
 #        s = s.replace(fc_Total,str(evaluated))
 #        return checkForFCEval(s) #in case there are multiple fc(expr) calls in the same string
 #    else:
