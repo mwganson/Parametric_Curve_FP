@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.11"
-#__version__ = "2022.03.11"
+__version__ = "2022.03.12"
+#__version__ = "2022.03.12"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -971,9 +971,9 @@ __version__ = "2022.03.11"
 #        buttonMinus.clicked.connect(self.buttonMinusClicked)
 #
 #        buttonImport = QtGui.QPushButton("Import")
-#        buttonImport.setToolTip ("Import one or all formulas from a JSON file\n\
+#        buttonImport.setToolTip ("Import one or more formulas from a JSON file\n\
 #Does not overwrite existing memory contents\n")
-#        bottomButtonBox.addWidget(buttonImport)
+#        topButtonBox.addWidget(buttonImport)
 #        buttonImport.clicked.connect(self.buttonImportClicked)
 #
 #        buttonCopy = QtGui.QPushButton("Copy")
@@ -988,15 +988,15 @@ __version__ = "2022.03.11"
 #
 #        buttonRename = QtGui.QPushButton("Rename")
 #        buttonRename.setToolTip ("Rename formula")
-#        topButtonBox.addWidget(buttonRename)
+#        bottomButtonBox.addWidget(buttonRename)
 #        buttonRename.clicked.connect(self.buttonRenameClicked)
 #
-#        buttonClear = QtGui.QPushButton("Clear")
+#        buttonClear = QtGui.QPushButton("Clear One")
 #        buttonClear.setToolTip ("Clear current formula")
 #        bottomButtonBox.addWidget(buttonClear)
 #        buttonClear.clicked.connect(self.buttonClearClicked)
 #
-#        buttonClearAll = QtGui.QPushButton("Clear All")
+#        buttonClearAll = QtGui.QPushButton("Clear")
 #        buttonClearAll.setToolTip ("Clear all formulas")
 #        topButtonBox.addWidget(buttonClearAll)
 #        buttonClearAll.clicked.connect(self.buttonClearAllClicked)
@@ -1006,7 +1006,7 @@ __version__ = "2022.03.11"
 #        topButtonBox.addWidget(buttonOpen)
 #        buttonOpen.clicked.connect(self.buttonOpenClicked)
 #
-#        buttonSave = QtGui.QPushButton("Save All")
+#        buttonSave = QtGui.QPushButton("Save")
 #        buttonSave.setToolTip ("Save JSON file")
 #        topButtonBox.addWidget(buttonSave)
 #        buttonSave.clicked.connect(self.buttonSaveClicked)
@@ -1022,8 +1022,8 @@ __version__ = "2022.03.11"
 #        bottomButtonBox.addWidget(buttonAppend)
 #        buttonAppend.clicked.connect(self.buttonAppendClicked)
 #
-#        buttonAppendAll = QtGui.QPushButton("Append All")
-#        buttonAppendAll.setToolTip ("Append all formulas to a JSON file")
+#        buttonAppendAll = QtGui.QPushButton("Append")
+#        buttonAppendAll.setToolTip ("Append one or more formulas to a JSON file")
 #        topButtonBox.addWidget(buttonAppendAll)
 #        buttonAppendAll.clicked.connect(self.buttonAppendAllClicked)
 #
@@ -1138,22 +1138,22 @@ __version__ = "2022.03.11"
 #                jtemp[k].pop("t")
 #                FreeCAD.Console.PrintMessage(f"ParametricCurve: renaming 't' to 't_min' in {k}"+chr(10))
 #        items = [k for k in jtemp.keys()]
-#        items = items if len(items) <= 1 else ["Import all"] + items
 #        if not items:
 #            return #nothing to import
 #        if len(items) == 1:
 #            self.importFormula(jtemp, items[0])
 #        else:
-#            item,ok = QtGui.QInputDialog.getItem(FreeCADGui.getMainWindow(), "Import Formulas","Select a formula or Import all:", items, 0, False)
+#            dlg = SelectObjects(items,"Select formulas to import:")
+#            dlg.all.setCheckState(QtCore.Qt.Checked)
+#            ok = dlg.exec_()
 #            if not ok:
-#                return #canceled
-#            if item == items[0]: #import all
-#                for key in jtemp.keys():
+#                return []
+#            selected = dlg.selected
+#            for key in jtemp.keys():
+#                if key in selected:
 #                    success = self.importFormula(jtemp,key)
 #                    if not success:
 #                        break
-#            else: #just import selected item
-#                self.importFormula(jtemp, item)
 #        self.updateFormulaList()
 #
 #    def checkBoxSortedClicked(self,btn):
@@ -1206,9 +1206,17 @@ __version__ = "2022.03.11"
 #            current = self.formulaList.currentItem().text()
 #            self.appendFormula(fname, current, jtemp)
 #        else:
+#            items = []
 #            for ii in range(self.formulaList.count()):
-#                item = self.formulaList.item(ii)
-#                success = self.appendFormula(fname,item.text(),jtemp)
+#                items.append(self.formulaList.item(ii).text())
+#            dlg = SelectObjects(items,"Select formulas to append:")
+#            dlg.all.setCheckState(QtCore.Qt.Checked)
+#            ok = dlg.exec_()
+#            if not ok:
+#                return []
+#            selected = dlg.selected
+#            for sel in selected:
+#                success = self.appendFormula(fname,sel,jtemp)
 #                if not success:
 #                    break #user canceled
 #
@@ -1236,8 +1244,20 @@ __version__ = "2022.03.11"
 #        fname = QtGui.QFileDialog.getSaveFileName(FreeCADGui.getMainWindow(),"Save all formulas to a JSON file",filter='*.*')[0]
 #        if not fname:
 #            return
+#        items = [key for key in self.json.keys()]
+#        dlg = SelectObjects(items,"Select formulas to save:")
+#        dlg.all.setCheckState(QtCore.Qt.Checked)
+#        ok = dlg.exec_()
+#        if not ok:
+#            return
+#        selected = dlg.selected
+#        if not selected:
+#            return
+#        new_dict = {}
+#        for sel in selected:
+#            new_dict[sel] = self.json[sel]
 #        with open(fname,"w") as outfile:
-#            json.dump(self.json,outfile)
+#            json.dump(new_dict,outfile)
 #
 #    def buttonSaveOneClicked(self,btn):
 #        current = self.formulaList.currentItem().text()
@@ -1418,7 +1438,55 @@ __version__ = "2022.03.11"
 #            self.fp.Document.commitTransaction()
 #            self.fp.Document.recompute()
 #
-#
+##select objects dialog class
+
+#class SelectObjects(QtGui.QDialog):
+#    def __init__(self, objects, label=""):
+#        QtGui.QDialog.__init__(self)
+#        scrollContents = QtGui.QWidget()
+#        scrollingLayout = QtGui.QVBoxLayout(self)
+#        scrollContents.setLayout(scrollingLayout)
+#        scrollArea = QtGui.QScrollArea()
+#        scrollArea.setVerticalScrollBarPolicy(QtGui.Qt.ScrollBarAlwaysOn)
+#        scrollArea.setHorizontalScrollBarPolicy(QtGui.Qt.ScrollBarAlwaysOff)
+#        scrollArea.setWidgetResizable(True)
+#        scrollArea.setWidget(scrollContents)
+
+#        vBoxLayout = QtGui.QVBoxLayout(self)
+#        vBoxLayout.addWidget(QtGui.QLabel(label))
+#        self.all = QtGui.QCheckBox("All")
+#        #self.all.setCheckState(QtCore.Qt.Checked) #set by caller
+#        self.all.stateChanged.connect(self.allStateChanged)
+#        vBoxLayout.addWidget(self.all)
+#        vBoxLayout.addWidget(scrollArea)
+#        self.setLayout(vBoxLayout)
+#        buttons = QtGui.QDialogButtonBox(
+#            QtGui.QDialogButtonBox.Ok.__or__(QtGui.QDialogButtonBox.Cancel),
+#            QtCore.Qt.Horizontal, self)
+#        buttons.accepted.connect(self.accept)
+#        buttons.rejected.connect(self.reject)
+#        self.checkBoxes = []
+#        self.selected = []
+#        for ii,object in enumerate(objects):
+#            self.checkBoxes.append(QtGui.QCheckBox(object))
+#            self.checkBoxes[-1].setCheckState(self.all.checkState())
+#            scrollingLayout.addWidget(self.checkBoxes[-1])
+#        vBoxLayout.addWidget(buttons)
+
+#    def allStateChanged(self, arg):
+#        self.checkAll(self.all.checkState())
+
+#    def checkAll(self, state):
+#        for cb in self.checkBoxes:
+#            cb.setCheckState(state)
+
+#    def accept(self):
+#        self.selected = []
+#        for cb in self.checkBoxes:
+#            if cb.checkState():
+#                self.selected.append(cb.text())
+#        super().accept()
+
 #class CurveVP:
 #    '''Creates a 3D parametric curve'''
 #    def __init__(self, obj):
@@ -1802,6 +1870,11 @@ def makeCurve(Parametric_Curve_FP):
     textDoc = None
     txt = """
 {
+"helix": {"a": "1  #pitch", "b": "5 #height", "c": "1 #base radius", 
+"d": ["20 #angle deg", "1  # 1= RH  0 = LH", "t*b/a", "a + b*t*sin(rad(d1))/(2*pi)", 
+"ternary(d2, 1, -1)"], 
+"X": "d4*cos(d3*d5)", "Y": "d4*sin(d3*d5)", "Z": "b*t/(2*pi)", 
+"t_min": "0", "t_max": "2*pi", "interval": "0.1"}, 
 "ellipse": {"a": "20 #radius on x-axis", "b": "20 #radius on y-axis (ignored if c != 0)", 
 "c": ".5 #eccentricity (0 to ignore and use a and b, else b = c * a)", 
 "d": ["0 #x center", "0 #y center", "ternary(c, a*(1-c*c)^0.5, b)", 
@@ -1814,7 +1887,7 @@ def makeCurve(Parametric_Curve_FP):
 "t_min": "0.0", "t_max": "2*pi", "interval": "0.1"},
 "coil": {"a": "6", "b": "1", "c": "20", "d": [], 
 "X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)", 
-"t_min": "0.0", "t_max": "2*pi", "interval": "0.02"}, 
+"t_min": "0.0", "t_max": "2*pi", "interval": "0.02"},
 "holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
 "X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
 "t_min": "0.0", "t_max": "2*pi", "interval": "0.1"}, 
