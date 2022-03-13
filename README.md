@@ -58,6 +58,9 @@ You can manually edit the JSON files in a text editor, but there are a few thing
 * Make sure to follow the formatting properly or else the fp object will not be able to read the file
 * Values for t_min, t_max, and interval must evaluate directly to float.  For example, "3.14159" works, but "pi" does not.
 * All values must be strings (in quotes)
+* Values may contain comments, 2 styles are supported:<br/>
+** #comment (everything following # is ignore)<br/>
+** {braced comment -- all things inside braces are ignored}<br/>
 
 ## Properties
 
@@ -226,6 +229,9 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.13
+** bug fix -- update formula editor memory when line edit text changes
+** add new comment style: {braced}
 * 2022.03.12
 ** improve Save, Import, Append commands in dialog by allowing multiple selections
 ** add helix formula, make it first formula --thanks edwilliams16 for this formula
