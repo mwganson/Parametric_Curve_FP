@@ -229,6 +229,8 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.13.rev2
+** bug fix -- instead of updating formula editor memory with each line change, update when certain buttons are clicked
 * 2022.03.13
 ** bug fix -- update formula editor memory when line edit text changes
 ** add new comment style: {braced}
