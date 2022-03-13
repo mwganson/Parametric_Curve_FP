@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.12"
-#__version__ = "2022.03.12"
+__version__ = "2022.03.13"
+#__version__ = "2022.03.13"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -761,11 +761,17 @@ __version__ = "2022.03.12"
 #
 #    def stripComments(self,string):
 #        """returns a string with everything after # removed, including #"""
-#        if not "#" in string:
+#        strip1 = string
+#        if not "#" in string and not "{" in string and not "}" in string:
 #            return string
-#        else:
+#        elif "#" in string:
 #            idx = string.index("#")
-#            return string[:idx]
+#            strip1 = string[:idx]
+#        if not "{" in strip1 and not "}" in strip1:
+#            return strip1
+#        idx2 = strip1.index("{")
+#        idx3 = strip1.index("}")
+#        return strip1[:idx2] + strip1[idx3+1:]
 #
 #    def makeCurve(self, fp):
 #        self.updateFromSpreadsheet(fp)
@@ -912,7 +918,7 @@ __version__ = "2022.03.12"
 #        self.blockSignals = True
 #        self.fp = fp
 #        self.sorted = fp.Sorted if hasattr(fp,"Sorted") else False
-#        self.json = self.shallowCopy(self.fp.Proxy.JSON_Data)
+##        self.json = self.shallowCopy(self.fp.Proxy.JSON_Data)
 #        self.clipboard = QtGui.QApplication.clipboard()
 #        self.form = QtGui.QWidget()
 #        self.form.setObjectName("formulaEditor")
@@ -923,7 +929,6 @@ __version__ = "2022.03.12"
 #        commandBox.setObjectName("commandBox")
 #        self.formulaList = QtGui.QListWidget()
 #        commandBox.addWidget(self.formulaList)
-#        self.updateFormulaList()
 #        self.formulaList.currentItemChanged.connect(self.formulaListCurrentItemChanged)
 #
 #        #layout is a vbox, the entire layout of the Edit Formulas panel, beneath the standard buttons
@@ -1031,49 +1036,61 @@ __version__ = "2022.03.12"
 #
 #        formulaBox.addWidget(QtGui.QLabel("a:"),0,0,QtCore.Qt.AlignRight)
 #        self.a_Line = QtGui.QLineEdit()
+#        self.a_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.a_Line,0,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("b:"),1,0,QtCore.Qt.AlignRight)
 #        self.b_Line = QtGui.QLineEdit()
+#        self.b_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.b_Line,1,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("c:"),2,0,QtCore.Qt.AlignRight)
 #        self.c_Line = QtGui.QLineEdit()
+#        self.c_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.c_Line,2,1)
 #
 #        dsize = 5
 #        formulaBox.addWidget(QtGui.QLabel("d1:\nd2:\nd3:\ndN:\n..."),3,0,dsize,1,QtCore.Qt.AlignRight)
 #        self.d_Lines = QtGui.QPlainTextEdit()
+#        self.d_Lines.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.d_Lines,3,1,dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("X:"),4+dsize,0,QtCore.Qt.AlignRight)
 #        self.X_Line = QtGui.QLineEdit()
+#        self.X_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.X_Line,4+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("Y:"),5+dsize,0,QtCore.Qt.AlignRight)
 #        self.Y_Line = QtGui.QLineEdit()
+#        self.Y_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.Y_Line,5+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("Z:"),6+dsize,0,QtCore.Qt.AlignRight)
 #        self.Z_Line = QtGui.QLineEdit()
+#        self.Z_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.Z_Line,6+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("t_min:"),7+dsize,0,QtCore.Qt.AlignRight)
 #        self.t_min_Line = QtGui.QLineEdit()
+#        self.t_min_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.t_min_Line,7+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("interval:"),8+dsize,0,QtCore.Qt.AlignRight)
 #        self.interval_Line = QtGui.QLineEdit()
+#        self.interval_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.interval_Line,8+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("t_max:"),9+dsize,0,QtCore.Qt.AlignRight)
 #        self.t_max_Line = QtGui.QLineEdit()
+#        self.t_max_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.t_max_Line,9+dsize,1)
 #
 #        self.form.setWindowTitle(f"Formula editor v{__version__}")
 #        self.fp.Proxy.editingMode = True
-#        self.populateLines(self.formulaList.itemAt(0,0).text())
 #        self.blockSignals = False
+#        self.json = self.shallowCopy(self.fp.Proxy.JSON_Data)
+#        self.updateFormulaList()
+#        self.populateLines(self.formulaList.itemAt(0,0).text())
 #
 #    def shallowCopy(self,fromdict):
 #        """make shallow copy of dictionary of dictionaries"""
@@ -1229,7 +1246,7 @@ __version__ = "2022.03.12"
 #            if not ok:
 #                return False
 #        jtemp[newName] = item
-#        FreeCAD.Console.PrintMessage(f"Appending {newName} to {fname}\n")
+#        FreeCAD.Console.PrintMessage(f"Appending '{newName}': {jtemp[newName]} to {fname}\n")
 #        with open(fname,"w") as outfile:
 #            json.dump(jtemp,outfile)
 #        return True
@@ -1270,6 +1287,8 @@ __version__ = "2022.03.12"
 #            jtemp.pop(pop)
 #        with open(fname,"w") as outfile:
 #            json.dump(jtemp,outfile)
+#        for key in jtemp.keys():
+#            FreeCAD.Console.PrintMessage(f"saved '{key}': {jtemp[key]} to {fname}\n")
 #
 #    def buttonClearAllClicked(self,btn):
 #        self.json = dict()
@@ -1357,20 +1376,25 @@ __version__ = "2022.03.12"
 #        self.json[current] = json.loads(self.clipboard.text())
 #        self.populateLines(current)
 #
-#    def saveLinesToJson(self,key):
+#    def saveLinesToJson(self,key=""):
+#        if self.blockSignals:
+#            return
+#        key = self.formulaList.currentItem().text() if not key else key
 #        cur = self.json[key]
-#        cur["a"] = self.a_Line.text()
-#        cur["b"] = self.b_Line.text()
-#        cur["c"] = self.c_Line.text()
-#        cur["d"] = self.d_Lines.toPlainText().split("\n")
-#        cur["X"] = self.X_Line.text()
-#        cur["Y"] = self.Y_Line.text()
-#        cur["Z"] = self.Z_Line.text()
-#        cur["t_min"] = self.t_min_Line.text()
-#        cur["interval"] = self.interval_Line.text()
-#        cur["t_max"] = self.t_max_Line.text()
+#        #FreeCAD.Console.PrintMessage(f"key = {key}, cur[key] = {cur[key]}\n")
+#        cur["a"] = self.a_Line.text() if hasattr(self,"a_Line") else ""
+#        cur["b"] = self.b_Line.text() if hasattr(self,"b_Line") else ""
+#        cur["c"] = self.c_Line.text() if hasattr(self,"c_Line") else ""
+#        cur["d"] = self.d_Lines.toPlainText().split("\n")  if hasattr(self,"d_Lines") else ""
+#        cur["X"] = self.X_Line.text() if hasattr(self,"X_Line") else ""
+#        cur["Y"] = self.Y_Line.text() if hasattr(self,"Y_Line") else ""
+#        cur["Z"] = self.Z_Line.text() if hasattr(self,"Z_Line") else ""
+#        cur["t_min"] = self.t_min_Line.text() if hasattr(self,"t_min_Line") else ""
+#        cur["interval"] = self.interval_Line.text() if hasattr(self,"interval_Line") else ""
+#        cur["t_max"] = self.t_max_Line.text() if hasattr(self,"t_max_Line") else ""
 #
 #    def populateLines(self,key):
+#        self.blockSignals = True
 #        cur = self.json[key]
 #        self.a_Line.setText(cur["a"])
 #        self.b_Line.setText(cur["b"])
@@ -1382,6 +1406,7 @@ __version__ = "2022.03.12"
 #        self.t_min_Line.setText(cur["t_min"])
 #        self.interval_Line.setText(cur["interval"])
 #        self.t_max_Line.setText(cur["t_max"])
+#        self.blockSignals = False
 #
 #    def reject(self):
 #        if not FreeCAD.ActiveDocument:
@@ -1871,35 +1896,54 @@ def makeCurve(Parametric_Curve_FP):
     txt = """
 {
 "helix": {"a": "1  #pitch", "b": "5 #height", "c": "1 #base radius", 
-"d": ["20 #angle deg", "1  # 1= RH  0 = LH", "t*b/a", "a + b*t*sin(rad(d1))/(2*pi)", 
-"ternary(d2, 1, -1)"], 
+"d": [
+"{d1} 20 #angle deg", 
+"{d2} 1  # 1= RH  0 = LH", 
+"{d3} t*b/a", 
+"{d4} c + b*t*sin(rad(d1))/(2*pi)", 
+"{d5} ternary(d2, 1, -1)"], 
 "X": "d4*cos(d3*d5)", "Y": "d4*sin(d3*d5)", "Z": "b*t/(2*pi)", 
-"t_min": "0", "t_max": "2*pi", "interval": "0.1"}, 
-"ellipse": {"a": "20 #radius on x-axis", "b": "20 #radius on y-axis (ignored if c != 0)", 
-"c": ".5 #eccentricity (0 to ignore and use a and b, else b = c * a)", 
-"d": ["0 #x center", "0 #y center", "ternary(c, a*(1-c*c)^0.5, b)", 
-"#ternary(x,y,z) = if x, then y else z", 
-"#in python: y if x else z", ""], 
-"X": "d1 + a * cos(t)", "Y": "d2 + d3 * sin(t)", "Z": "0", 
+"t_min": "0", "t_max": "2*pi", "interval": "0.1"},
+ 
+"ellipse": {"a": "20 #major radius", "b": "10 #minor radius (ignored if c != 0)", 
+"c": "0.5 #eccentricity (0 to ignore and use a and b, else b^2 = a^2*(1 - c^2)", 
+"d": [
+"{d1} 0 # x center", 
+"{d2} 0 # y center", 
+"{d3} 20 # angle from x-axis to major axis (deg)", 
+"{d4} ternary(c, a*(1-c*c)^0.5, b)",
+"{d5} a * cos(t) # x -unrotated ellipse",
+"{d6} d4 * sin(t) # y- unrotated ellipse", 
+"{d7} radians(d3) # angle in radians"
+], 
+"X": "d1 + d5 * cos(d7) - d6 * sin(d7)", "Y": "d2 + d5 * sin(d7) + d6 * cos(d7)", "Z": "0", 
 "t_min": "0.0", "t_max": "2*pi", "interval": "0.1"},
+
 "amoeba": {"a": "36.3", "b": "12", "c": "1.5", "d": ["(a+c*sin(b*t))"], 
 "X": "cos(t)*d1", "Y": "sin(t)*d1", "Z": "0", 
 "t_min": "0.0", "t_max": "2*pi", "interval": "0.1"},
+
 "coil": {"a": "6", "b": "1", "c": "20", "d": [], 
 "X": "(a + b * cos(c*t))*cos(t)", "Y": "(a + b * cos(c*t))*sin(t)", "Z": "b*sin(c*t)", 
 "t_min": "0.0", "t_max": "2*pi", "interval": "0.02"},
-"holesaw": {"a": "12", "b": "6", "c": "5.000000", "d": [], 
-"X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
+
+"holesaw": {"a": "12  # radius", "b": "6 #no of teeth", "c": "5.000000 #sine amplitude", 
+"d": [""], "X": "cos(t)*a", "Y": "sin(t)*a", "Z": "c*sin(b*t)", 
 "t_min": "0.0", "t_max": "2*pi", "interval": "0.1"}, 
-"sawtooth": {"a": "40", "b": "10", "c": "0.8", "d": ["mod(b*t, 1)", "10"], 
-"X": "a*cos(2*pi*t)", "Y": "a*sin(2*pi*t)", "Z": "d2*(lt(d1,c)*d1/c + gte(d1,c)*(1-d1)/(1-c))", 
+
+"sawtooth": {"a": "40 #radius", "b": "5 #number teeth", "c": "0.8 # tooth parameter between 0 and 1",
+"d": ["10 #amplitude", "mod(b*t, 1)", "# best with polygon"], 
+"X": "a*cos(2*pi*t)", "Y": "a*sin(2*pi*t)", "Z": "d1*(lt(d2,c)*d2/c + gte(d2,c)*(1-d2)/(1-c))", 
 "t_min": "0.0", "t_max": "1.0", "interval": "0.01"},
+
 "sinbraid_round_3": {"a": "10", "b": "sin(t*10/3) #radial amplitude", "c": "cos(t*5/3)*5 #vertical amplitude", "d": [], 
 "X": "a*sin(t)+b*sin(t)", "Y": "a*cos(t)+b*cos(t)", "Z": "c", 
 "t_min": "0.0", "t_max": "6*pi", "interval": "0.02"},
+
 "sinbraid_round_4_3": {"a": "10  #radius", "b": "sin(t*9/4)   # radial amplitude", "c": "cos(t*3/4)*4  # vertical amplitude", "d": [], 
 "X": "a*sin(t)+b*sin(t)", "Y": "a*cos(t)+b*cos(t)", "Z": "c", 
 "t_min": "0.0", "t_max": "8*pi", "interval": "0.1"},
+
 "para_curve": {"a": "10 #radius plane", "b": "4 #period", "c": "3 #amplitude", "d": ["(a+c*sin(b*t+pi/2)) #formula"], 
 "X": "cos(t)*d1 #polar X", "Y": "sin(t)*d1  #polarY", "Z": "0", 
 "t_min": "0.0", "t_max": "2*pi", "interval": "0.1"}
