@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.13"
-#__version__ = "2022.03.13"
+__version__ = "2022.03.13.rev2"
+#__version__ = "2022.03.13.rev2"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -1036,53 +1036,43 @@ __version__ = "2022.03.13"
 #
 #        formulaBox.addWidget(QtGui.QLabel("a:"),0,0,QtCore.Qt.AlignRight)
 #        self.a_Line = QtGui.QLineEdit()
-#        self.a_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.a_Line,0,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("b:"),1,0,QtCore.Qt.AlignRight)
 #        self.b_Line = QtGui.QLineEdit()
-#        self.b_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.b_Line,1,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("c:"),2,0,QtCore.Qt.AlignRight)
 #        self.c_Line = QtGui.QLineEdit()
-#        self.c_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.c_Line,2,1)
 #
 #        dsize = 5
 #        formulaBox.addWidget(QtGui.QLabel("d1:\nd2:\nd3:\ndN:\n..."),3,0,dsize,1,QtCore.Qt.AlignRight)
 #        self.d_Lines = QtGui.QPlainTextEdit()
-#        self.d_Lines.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.d_Lines,3,1,dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("X:"),4+dsize,0,QtCore.Qt.AlignRight)
 #        self.X_Line = QtGui.QLineEdit()
-#        self.X_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.X_Line,4+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("Y:"),5+dsize,0,QtCore.Qt.AlignRight)
 #        self.Y_Line = QtGui.QLineEdit()
-#        self.Y_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.Y_Line,5+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("Z:"),6+dsize,0,QtCore.Qt.AlignRight)
 #        self.Z_Line = QtGui.QLineEdit()
-#        self.Z_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.Z_Line,6+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("t_min:"),7+dsize,0,QtCore.Qt.AlignRight)
 #        self.t_min_Line = QtGui.QLineEdit()
-#        self.t_min_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.t_min_Line,7+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("interval:"),8+dsize,0,QtCore.Qt.AlignRight)
 #        self.interval_Line = QtGui.QLineEdit()
-#        self.interval_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.interval_Line,8+dsize,1)
 #
 #        formulaBox.addWidget(QtGui.QLabel("t_max:"),9+dsize,0,QtCore.Qt.AlignRight)
 #        self.t_max_Line = QtGui.QLineEdit()
-#        self.t_max_Line.textChanged.connect(self.saveLinesToJson)
 #        formulaBox.addWidget(self.t_max_Line,9+dsize,1)
 #
 #        self.form.setWindowTitle(f"Formula editor v{__version__}")
@@ -1114,13 +1104,17 @@ __version__ = "2022.03.13"
 #    def formulaListCurrentItemChanged(self,current,prev):
 #        if self.blockSignals:
 #            return
+#        #FreeCAD.Console.PrintMessage(f"current = {current.text() if current else None}, prev = {prev.text() if prev else None}\n")
 #        if prev:
 #            self.saveLinesToJson(prev.text())
 #        if current:
+#            #FreeCAD.Console.PrintMessage(f"populating lines with {current.text()}\n")
 #            self.populateLines(current.text())
 #
 #    def importFormula(self, fromDict, formulaName):
 #        '''adds fromDict[formulaName] to self.json'''
+#        current = self.formulaList.currentItem().text()
+#        self.saveLinesToJson(current)
 #        if not formulaName in self.json:
 #            self.json[formulaName] = fromDict[formulaName]
 #        else: #name conflict
@@ -1133,6 +1127,8 @@ __version__ = "2022.03.13"
 #        return True
 #
 #    def buttonImportClicked(self,btn):
+#        current = self.formulaList.currentItem().text()
+#        self.saveLinesToJson(current)
 #        fname = QtGui.QFileDialog.getOpenFileName(FreeCADGui.getMainWindow(),"Open a JSON file",filter='*.*')[0]
 #        if not fname:
 #            return
@@ -1252,12 +1248,18 @@ __version__ = "2022.03.13"
 #        return True
 #
 #    def buttonAppendClicked(self,btn):
+#        current = self.formulaList.currentItem().text()
+#        self.saveLinesToJson(current)
 #        self.setupAppend()
 #
 #    def buttonAppendAllClicked(self,btn):
+#        current = self.formulaList.currentItem().text()
+#        self.saveLinesToJson(current)
 #        self.setupAppend(all=True)
 #
 #    def buttonSaveClicked(self,btn):
+#        current = self.formulaList.currentItem().text()
+#        self.saveLinesToJson(current)
 #        fname = QtGui.QFileDialog.getSaveFileName(FreeCADGui.getMainWindow(),"Save all formulas to a JSON file",filter='*.*')[0]
 #        if not fname:
 #            return
@@ -1278,6 +1280,7 @@ __version__ = "2022.03.13"
 #
 #    def buttonSaveOneClicked(self,btn):
 #        current = self.formulaList.currentItem().text()
+#        self.saveLinesToJson(current)
 #        fname = QtGui.QFileDialog.getSaveFileName(FreeCADGui.getMainWindow(),"Save a formula to JSON file",dir=current)[0]
 #        if not fname:
 #            return
@@ -1377,11 +1380,9 @@ __version__ = "2022.03.13"
 #        self.populateLines(current)
 #
 #    def saveLinesToJson(self,key=""):
-#        if self.blockSignals:
-#            return
-#        key = self.formulaList.currentItem().text() if not key else key
+##        FreeCAD.Console.PrintMessage(f"saveLinesToJson({key}), blockSignals = {self.blockSignals}\n")
 #        cur = self.json[key]
-#        #FreeCAD.Console.PrintMessage(f"key = {key}, cur[key] = {cur[key]}\n")
+##        FreeCAD.Console.PrintMessage(f"key = {key}\n")
 #        cur["a"] = self.a_Line.text() if hasattr(self,"a_Line") else ""
 #        cur["b"] = self.b_Line.text() if hasattr(self,"b_Line") else ""
 #        cur["c"] = self.c_Line.text() if hasattr(self,"c_Line") else ""
@@ -1394,6 +1395,8 @@ __version__ = "2022.03.13"
 #        cur["t_max"] = self.t_max_Line.text() if hasattr(self,"t_max_Line") else ""
 #
 #    def populateLines(self,key):
+##        FreeCAD.Console.PrintMessage(f"populateLines({key})\n")
+##        FreeCAD.Console.PrintMessage(f"self.json[{key}] = {self.json[key]}\n")
 #        self.blockSignals = True
 #        cur = self.json[key]
 #        self.a_Line.setText(cur["a"])
