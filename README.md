@@ -100,21 +100,21 @@ The + button creates a new formula, initially a copy of the currently selected f
 The - button deletes the currently selected formula.  It cannot be undone except by using Reset, which sets the dialog back to its initial state when it was first opened, or Cancel, which does the same thing and also closes the dialog.
 ###### Rename
 Rename button is used to rename the currently selected formula.
-###### Clear All
+###### Clear
 Clears all formulas from the editor.  Use with caution.  To undo, press Reset or Cancel, but in such cases you might lose some work because these options return you to the state when the dialog was first opened.
 ###### Open
 Open button opens and reads a JSON text file of the appropriate format.  It only loads the data into memory in the editor, does not change the ParametricCurve object until the user presses OK or Apply.  Current content in editor memory is all overwritten.
-###### Save All
-Save all formulas to a JSON file.  This overwrites the contents of the file, if any.
-###### Append All
-Append all formulas to a JSON file.  Does not overwrite the contents of the file.  You will be prompted for new formula names if there are conflicts with existing formulas in the file.
+###### Save
+Save one or more formulas to a JSON file.  This overwrites the contents of the file, if any.
+###### Append
+Append one or more formulas to a JSON file.  Does not overwrite the contents of the file.  You will be prompted for new formula names if there are conflicts with existing formulas in the file.
 ###### Import
-Import one or all formulas from a JSON file. Select Import all to import them all or any individual formula to only import that one.  If the file only contains one formula you will not be prompted to select which formula to import.  You will be prompted to select a new name for any imports that conflict with existing formula names in the editor.  If you press Cancel when prompted for a new name the import will be aborted, but anything already imported will remain.
+Import one or more formulas from a JSON file.  If the file only contains one formula you will not be prompted to select which formula to import.  You will be prompted to select a new name for any imports that conflict with existing formula names in the editor.  If you press Cancel when prompted for a new name the import will be aborted, but anything already imported will remain.
 ###### Copy
 Copy button copies the currently selected formula to the clipboard as a text object that can be later pasted into another formula.
 ###### Paste
 Paste button copies the text from the clipboard (previously inserted using Copy) into the currently selected formula, overwriting any existing values.  Cannot be undone.
-###### Clear
+###### Clear One
 Clear button clears the currently selected formula.  Cannot be undone except with Reset, which resets the entire set of formulas to what it was when the dialog was initially opened.  Cancel will also undo, and close the dialog.
 ###### Save One
 Save the currently selected formula to a JSON file.  All contents of the file, if any, will be overwritten.
@@ -226,6 +226,9 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.12
+** improve Save, Import, Append commands in dialog by allowing multiple selections
+** add helix formula, make it first formula --thanks edwilliams16 for this formula
 * 2022.03.11
 ** bug fix fc(expr) better handle both unit and unitless expressions
 ** check for nested(fc(fc(expr)), which are not supported
