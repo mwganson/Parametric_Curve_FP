@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.03.13.rev2"
-#__version__ = "2022.03.13.rev2"
+__version__ = "2022.03.16"
+#__version__ = "2022.03.16"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -1348,36 +1348,49 @@ __version__ = "2022.03.13.rev2"
 #    def buttonMinusClicked(self, btn):
 #        self.fp.Document.openTransaction("ParametricCurve::Delete Formula")
 #        self.blockSignals = True
+#        row = self.formulaList.currentRow()
 #        self.json.pop(self.formulaList.currentItem().text(),None)
 #        self.updateFormulaList()
 #        if len(self.json.keys()) == 0:
 #            self.buttonClearClicked(True)
 #            self.buttonPlusClicked(True)
-#        self.formulaList.setCurrentRow(0)
+#        self.formulaList.setCurrentRow(row if row < self.formulaList.count() else self.formulaList.count()-1)
 #        self.populateLines(self.formulaList.item(0).text())
 #        self.blockSignals = False
 #        self.fp.Document.commitTransaction()
 #
 #    def buttonCopyClicked(self, btn):
 #        current = self.formulaList.currentItem().text()
-#        jsonstr = str(self.json[current]).replace('"','"""').replace("'",'"')
+#        tempDict = {current:self.json[current]}
+#        jsonstr = str(tempDict).replace('"','"""').replace("'",'"')
 #        self.clipboard.setText(jsonstr)
 #        FreeCAD.Console.PrintMessage(f"string in clipboard: {jsonstr}\n")
 #
 #    def buttonPasteClicked(self, btn):
 #        cliptext = self.clipboard.text()
+#        #FreeCAD.Console.PrintMessage(f"cliptext = {cliptext}\n")
 #        if not cliptext:
 #            FreeCAD.Console.PrintError("No text in clipboard\n")
 #            return
 #        else:
 #            try:
-#                testDict = json.loads(cliptext)
+#                tempDict = json.loads(cliptext)
 #            except Exception as ex:
 #                FreeCAD.Console.PrintError(f"ParametricCurve::PasteException: {ex}\n")
 #                return
+#        self.buttonPlusClicked(True)
 #        current = self.formulaList.currentItem().text()
-#        self.json[current] = json.loads(self.clipboard.text())
-#        self.populateLines(current)
+#        keyName = [k for k in tempDict.keys()][0]
+#        if keyName in self.json:
+#            FreeCAD.Console.PrintWarning(f"{keyName} already exists, so using default formula name: {current}\n")
+#            newName = current
+#        else:
+#            newName = keyName
+#        self.json.pop(current,None)
+#        self.json[newName] = tempDict[keyName]
+#        self.updateFormulaList()
+#        self.formulaList.setCurrentRow(self.formulaList.count()-1)
+#        self.populateLines(newName)
 #
 #    def saveLinesToJson(self,key=""):
 ##        FreeCAD.Console.PrintMessage(f"saveLinesToJson({key}), blockSignals = {self.blockSignals}\n")
