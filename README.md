@@ -116,7 +116,7 @@ Import one or more formulas from a JSON file.  If the file only contains one for
 ###### Copy
 Copy button copies the currently selected formula to the clipboard as a text object that can be later pasted into another formula.
 ###### Paste
-Paste button copies the text from the clipboard (previously inserted using Copy) into the currently selected formula, overwriting any existing values.  Cannot be undone.
+Paste button copies the text from the clipboard (previously inserted into the clipboard using Copy) into a new formula.  If there is a naming conflict between text in clipboard and the formula names already open in the editor, then a default formula name is used for the name of the new formula and a warning is shown.
 ###### Clear One
 Clear button clears the currently selected formula.  Cannot be undone except with Reset, which resets the entire set of formulas to what it was when the dialog was initially opened.  Cancel will also undo, and close the dialog.
 ###### Save One
@@ -229,6 +229,10 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.03.16
+** when copying to clipboard, include also the name of the formula
+** when pasting from clipboard, create a new formula and paste into it rather than into the currently selected formula
+** fix regression: after deleting formula, select the next item instead of row 0
 * 2022.03.13.rev2
 ** bug fix -- instead of updating formula editor memory with each line change, update when certain buttons are clicked
 * 2022.03.13
