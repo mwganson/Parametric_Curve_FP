@@ -2070,7 +2070,9 @@ ParametricCurve feature python objects.  May we proceed?\n\n"
             noImport = True
 
     if not noImport: #don't never use no double negatives
-
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
         import Parametric_Curve_FP
         if Parametric_Curve_FP.__version__ != __version__:
             writeFile()
