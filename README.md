@@ -229,6 +229,9 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.04.04.rev2
+* accept pr to fix typo
+* update version information
 * 2022.04.04
 * accept pr to fix issue with realthunder branch
 * update version
