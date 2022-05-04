@@ -229,12 +229,14 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.05.04
+** Use FreeCAD.ActiveDocument.Objects[0] instead of FreeCAD.ActiveDocument.ActiveObject with evalExpression() because if the active object is deleted there won't be one.
 * 2022.04.04.rev2
-* accept pr to fix typo
-* update version information
+** accept pr to fix typo
+** update version information
 * 2022.04.04
-* accept pr to fix issue with realthunder branch
-* update version
+** accept pr to fix issue with realthunder branch
+** update version
 * 2022.03.16
 ** when copying to clipboard, include also the name of the formula
 ** when pasting from clipboard, create a new formula and paste into it rather than into the currently selected formula
