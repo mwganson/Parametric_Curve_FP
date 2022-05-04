@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.04.04"
-#__version__ = "2022.04.04"
+__version__ = "2022.05.04"
+#__version__ = "2022.05.04"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -291,7 +291,7 @@ __version__ = "2022.04.04"
 #        fc_Eval = fc_Total[3:-1] # example dd.ddFloat
 #        if "fc(" in fc_Eval:
 #            FreeCAD.Console.PrintError("ParametricCurve::Unsupported -- Nested fc(expr) functions not supported.\n")
-#        evaluated = FreeCAD.ActiveDocument.ActiveObject.evalExpression(fc_Eval)
+#        evaluated = FreeCAD.ActiveDocument.Objects[0].evalExpression(fc_Eval)
 #        evaluated = evaluated.Value if hasattr(evaluated,"Value") else evaluated
 #        s = s.replace(fc_Total,str(evaluated))
 #        return checkForFCEval(s) #in case there are multiple fc(expr) calls in the same string
