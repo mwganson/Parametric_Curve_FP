@@ -229,6 +229,8 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2022.12.16
+** fix bug in updating from spreadsheet related to d1, d2, etc.  thanks mike-554
 * 2022.05.04
 ** Use FreeCAD.ActiveDocument.Objects[0] instead of FreeCAD.ActiveDocument.ActiveObject with evalExpression() because if the active object is deleted there won't be one.
 * 2022.04.04.rev2
