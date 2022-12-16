@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2022.05.04"
-#__version__ = "2022.05.04"
+__version__ = "2022.12.16"
+#__version__ = "2022.12.16"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
@@ -639,8 +639,8 @@ __version__ = "2022.05.04"
 #        new_d = []
 #        while hasattr(fp.Spreadsheet,k):
 #            new_d.append(str(getattr(fp.Spreadsheet,k)))
-#            k = "d"+str(dd+1)
 #            dd += 1
+#            k = "d"+str(dd+1)
 #        fp.d = new_d
 #        fp.X=str(fp.Spreadsheet.X)
 #        fp.Y=str(fp.Spreadsheet.Y)
