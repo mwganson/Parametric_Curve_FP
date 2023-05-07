@@ -189,6 +189,7 @@ Supported math functions:<br/><br/>
     "trunc": int<br/>
     "round": round<br/>
     "mod": lambda a, b: a % b<br/>
+    "sgn": lambda a: -1 if a < -epsilon else 1 if a > epsilon else 0<br/>
     "interval": lambda a, b, t: 1 * ((t >= a) and (t < b))<br/>
     "lt":lambda a, b: 1 * (a < b)<br/>
     "lte": lambda a, b: 1 * (a <= b)<br/>
@@ -198,6 +199,7 @@ Supported math functions:<br/><br/>
     "isclose": lambda a, b: 1 * (math.isclose(a, b, abs_tol = 1e-9))<br/>
     "isclosetol": lambda a, b, tol: 1 * (math.isclose(a, b, abs_tol = tol))<br/>
     "floordiv": lambda a, b: a // b<br/>
+    "copysign(a, b)": lambda a, b: 1 * math.copysign(a, b)<br/>
     "any": lambda *a: 1 * any(a) (returns 1 if any item in list is not 0, else 0)<br/>
     "all": lambda *a: 1 * all(a) (returns 1 if all items in list are not 0, else 0)<br/>
     "sum": lambda *a: sum(a)<br/>
