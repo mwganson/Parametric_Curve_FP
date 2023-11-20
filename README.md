@@ -56,7 +56,7 @@ Sample JSON file:
 
 You can manually edit the JSON files in a text editor, but there are a few things to keep in mind.
 * Make sure to follow the formatting properly or else the fp object will not be able to read the file
-* Values for t_min, t_max, and interval must evaluate directly to float.  For example, "3.14159" works, but "pi" does not.
+* Values for t_min, t_max, and interval must evaluate directly to float. They can't reference other values, such as a or X.
 * All values must be strings (in quotes)
 * Values may contain comments, 2 styles are supported:<br/>
 ** #comment (everything following # is ignore)<br/>
@@ -140,7 +140,7 @@ These properties are now gone as of v0.2022.03.09, except for File, which is hid
 ### Equation1 and Equation2 Groups
 String variables: a, b, c, d1-dN, X, Y, and Z may contain python style comments.  These begin with a pound symbol (#).  The # and the rest of the line are ignored by the evaluation mechanism.  For example, a value for a could be 12 #radius.  In such a case only the 12 is evaluated, not the # or anything following it.
 #### a,b,c,d,X,Y,Z
-These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Basically, anything in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.<br/>
+These are string properties that hold the formulas for creating the curve.  Math expressions, like cos(), sin(), atan(), etc. can be used in the formulas.  Most things in the math package, such as math.pi can be used (use it as simply pi and not as math.pi).  See the list of supported functions below.  In all of these you can refer to t.  For property a you cannot refer to b or c (because these variables haven't been created yet).  In b you can refer to a, but not c.  In c you can refer to both a and b.  In X,Y, and Z you can refer to a, b, or c.  All references are case-sensitive, meaning, for example, x doesn't work, but X does.<br/>
 <br/>
 a -> only refer to t<br/>
 b -> only refer to a and t<br/>
