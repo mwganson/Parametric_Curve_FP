@@ -171,10 +171,14 @@ __version__ = "2023.05.06"
 #
 #fn = {
 #    "sin": math.sin,
+#    "sinh": math.sinh,
 #    "cos": math.cos,
+#    "cosh: math.cosh,
 #    "tan": math.tan,
+#    "tanh": math.tanh,
 #    "exp": math.exp,
 #    "atan": math.atan,
+#    "atanh": math.atanh,
 #    "acos": math.acos,
 #    "acosh": math.acosh,
 #    "asin": math.asin,
@@ -182,7 +186,6 @@ __version__ = "2023.05.06"
 #    "sqrt": math.sqrt,
 #    "ceil": math.ceil,
 #    "floor": math.floor,
-#    "sinh": math.sinh,
 #    "log": math.log,
 #    "factorial":math.factorial,
 #    "abs": abs,
