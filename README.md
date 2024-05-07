@@ -163,10 +163,14 @@ d5 -> a, b, c, t, d1, d2, d3, d4<br/>
 ### Functions
 Supported math functions:<br/><br/>
     "sin": math.sin<br/>
+    "sinh": math.sinh<br/>
     "cos": math.cos<br/>
+    "cosh": math.cosh<br/>
     "tan": math.tan<br/>
+    "tanh": math.tanh<br/>
     "exp": math.exp<br/>
     "atan": math.atan<br/>
+    "atanh": math.atanh<br/>
     "atan2": lambda a, b: math.atan2(a,b)<br/>
     "acos": math.acos<br/>
     "acosh": math.acosh<br/>
@@ -175,7 +179,6 @@ Supported math functions:<br/><br/>
     "sqrt": math.sqrt<br/>
     "ceil": math.ceil<br/>
     "floor": math.floor<br/>
-    "sinh": math.sinh<br/>
     "log": math.log<br/>
     "factorial":math.factorial<br/>
     "abs": abs<br/>
