@@ -234,6 +234,8 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2024.05.08
+** accept edwilliams pr to add some hyperbolic function support
 * 2023.05.06
 ** add copysign() function, document sgn() function in readme  thanks edwilliams
 * 2022.12.16
