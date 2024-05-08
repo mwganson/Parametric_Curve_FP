@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__version__ = "2023.05.06"
-#__version__ = "2023.05.06"
+__version__ = "2024.05.08"
+#__version__ = "2024.05.08"
 #__title__ = "Parametric_Curve_FP"
 #__author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 #__license__ = "LGPL 2.1"
