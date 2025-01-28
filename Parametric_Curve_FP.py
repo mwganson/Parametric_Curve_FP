@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "2025.01.28"
+__version__ = "2025.01.28b"
 __title__ = "Parametric_Curve_FP"
 __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 __license__ = "LGPL 2.1"
@@ -905,9 +905,7 @@ Use Open File to open file in external editor.\n\
         if not hasattr(self,"fpName"):
             FreeCAD.Console.PrintError("Formula editor not available for objects created with older versions.\n")
             return #object made with old version
-        fp = FreeCAD.ActiveDocument.getObject(self.fpName)
-        if not fp:
-            fp = FreeCADGui.Selection.getSelection()[0]
+        fp = FreeCADGui.Selection.getSelection()[0]
         if not FreeCADGui.Control.activeDialog():
             editor = TaskEditFormulasPanel(fp)
             FreeCADGui.Control.showDialog(editor)

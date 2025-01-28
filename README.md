@@ -234,6 +234,8 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2025.01.28b
+** internally, do not use fpName variable to get current object
 * 2025.01.28
 ** transition to .py file extension and do away with need for 2 separate files
 ** fix issue with opening the formula editor with some legacy objects
