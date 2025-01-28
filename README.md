@@ -8,7 +8,7 @@ Toolbar icon: <a download="Parametric_Curve_FP.svg" href="Parametric_Curve_FP.sv
 </a>
 
 ## Installation
-Install using the Addon Manager in the Tools menu from the Macros tab.
+Install using the Addon Manager in the Tools menu from the Macros tab.  When updating to version 0.2025.01.28 from a previous version it is necessary to first delete the .FCMacro file.  Going forward we will now only have the .py file.
 
 ## History
 This macro is based on the FreeCAD macro 3D Parametric Curve by Lucio Gomez and Laurent Despeyroux.  https://wiki.freecadweb.org/Macro_3D_Parametric_Curve
@@ -234,6 +234,9 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2025.01.28
+** transition to .py file extension and do away with need for 2 separate files
+** fix issue with opening the formula editor with some legacy objects
 * 2024.05.08b
 ** fix typo (missing double quote character)
 * 2024.05.08
