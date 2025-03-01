@@ -10,6 +10,10 @@ Toolbar icon: <a download="Parametric_Curve_FP.svg" href="Parametric_Curve_FP.sv
 ## Installation
 Install using the Addon Manager in the Tools menu from the Macros tab.  When updating to version 0.2025.01.28 from a previous version it is necessary to first delete the .FCMacro file.  Going forward we will now only have the .py file.
 
+## Forum official thread
+This link below is to the official macro discussion thread.  You may post your questions there on using the macro.  
+https://forum.freecad.org/viewtopic.php?t=61707
+
 ## History
 This macro is based on the FreeCAD macro 3D Parametric Curve by Lucio Gomez and Laurent Despeyroux.  https://wiki.freecadweb.org/Macro_3D_Parametric_Curve
 The difference is this macro creates a feature python object that also has spreadsheet and JSON integration capabilities.
