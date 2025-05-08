@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "2025.01.28b"
+__version__ = "2025.05.08"
 __title__ = "Parametric_Curve_FP"
 __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 __license__ = "LGPL 2.1"
@@ -1458,7 +1458,7 @@ Overwrites any existing content in the file\n")
         FreeCAD.ActiveDocument.recompute()
 
     def getStandardButtons(self):
-        return int(QtGui.QDialogButtonBox.Ok) | int(QtGui.QDialogButtonBox.Cancel) | int(QtGui.QDialogButtonBox.Reset) | int(QtGui.QDialogButtonBox.Apply)
+        return QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel | QtGui.QDialogButtonBox.Reset | QtGui.QDialogButtonBox.Apply
 
     def clicked(self, button):
         if not FreeCAD.ActiveDocument:
