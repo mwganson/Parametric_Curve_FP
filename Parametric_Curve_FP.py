@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "2026.07.08"
+__version__ = "2026.07.08b"
 __title__ = "Parametric_Curve_FP"
 __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 __license__ = "LGPL 2.1"
@@ -1983,6 +1983,8 @@ def makeCurve(Parametric_Curve_FP):
         FreeCADGui.SendMsgToActiveView("ViewSelection",True)
 
 if __name__ == "__main__":
+    import importlib
     import Parametric_Curve_FP
+    importlib.reload(Parametric_Curve_FP)
     makeCurve(Parametric_Curve_FP)
 
