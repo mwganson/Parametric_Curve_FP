@@ -238,6 +238,8 @@ F_d is a list of floats pointing to the d string list.  It is 1-indexed to make 
 <br/>
 
 ### ChangeLog
+* 2026.07.08
+** remove unnecessary coin import
 * 2025.05.08
 ** fix error message on opening editor dialog related to changes in python in newer freecad builds
 * 2025.01.28b
