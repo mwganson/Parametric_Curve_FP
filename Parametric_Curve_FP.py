@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "2025.05.08"
+__version__ = "2026.07.08"
 __title__ = "Parametric_Curve_FP"
 __author__ = "<TheMarkster> 2021, based on macro 3D Parametric Curve by Gomez Lucio,  Modified by Laurent Despeyroux on 9th feb 2015"
 __license__ = "LGPL 2.1"
@@ -8,7 +8,6 @@ __usage__ = '''Activate the tool and modify properties as desired'''
 
 
 import FreeCAD, FreeCADGui
-from pivy import coin
 from math import *
 import statistics
 import Part
@@ -905,7 +904,7 @@ Use Open File to open file in external editor.\n\
         if not hasattr(self,"fpName"):
             FreeCAD.Console.PrintError("Formula editor not available for objects created with older versions.\n")
             return #object made with old version
-        fp = FreeCADGui.Selection.getSelection()[0]
+        fp = FreeCAD.ActiveDocument.getObject(self.fpName)
         if not FreeCADGui.Control.activeDialog():
             editor = TaskEditFormulasPanel(fp)
             FreeCADGui.Control.showDialog(editor)
@@ -1458,7 +1457,7 @@ Overwrites any existing content in the file\n")
         FreeCAD.ActiveDocument.recompute()
 
     def getStandardButtons(self):
-        return QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel | QtGui.QDialogButtonBox.Reset | QtGui.QDialogButtonBox.Apply
+        return (QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel | QtGui.QDialogButtonBox.Reset | QtGui.QDialogButtonBox.Apply)
 
     def clicked(self, button):
         if not FreeCAD.ActiveDocument:
@@ -1896,7 +1895,6 @@ static char *_ce4cf5b663f4b5f9c7b8e8d0afb135esksMX5u0XGPbxtkI[] = {
                 Since no data were serialized nothing needs to be done here.'''
         return None
 
-# end of CurveVP
 
 def makeCurve(Parametric_Curve_FP):
     sheet = None
@@ -1984,10 +1982,7 @@ def makeCurve(Parametric_Curve_FP):
         pc.Proxy.readJSONFile(pc,txt)
         FreeCADGui.SendMsgToActiveView("ViewSelection",True)
 
-
 if __name__ == "__main__":
-    import importlib
     import Parametric_Curve_FP
-    importlib.reload(Parametric_Curve_FP)
     makeCurve(Parametric_Curve_FP)
 
